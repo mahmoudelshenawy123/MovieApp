@@ -53,3 +53,8 @@
 {"level":"info","message":"Connected to MongoDB...","timestamp":"2024-05-11 18:24:04"}
 {"level":"info","message":"Server running at http://localhost:8080","timestamp":"2024-05-11 18:26:07"}
 {"level":"info","message":"Connected to MongoDB...","timestamp":"2024-05-11 18:26:08"}
+{"level":"info","message":"Server running at http://localhost:8080","timestamp":"2024-05-11 18:29:55"}
+{"level":"info","message":"Connected to MongoDB...","timestamp":"2024-05-11 18:29:56"}
+{"level":"info","message":"------------------ Movie with ID 663f86d11e0123ba625e6724 -----------------","timestamp":"2024-05-11 18:32:01"}
+{"level":"info","message":"--------- Get Movie By Id -----------","timestamp":"2024-05-11 18:32:01"}
+{"level":"info","message":"--------- Get Movie By Id Successfully -----------","timestamp":"2024-05-11 18:32:02"}
