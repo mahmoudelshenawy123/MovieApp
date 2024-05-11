@@ -1,6 +1,45 @@
+const XLSX = require('xlsx');
 const { logger } = require('../../config/logger');
 const { ResponseSchema } = require('../../helper/HelperFunctions');
 const { Movies } = require('./MoviessModel');
+
+exports.GetMoviesFromCSVFile = async (file) => {
+  try {
+    logger.info('--------- Start Get Movies From CSV File -----------');
+    if (!file) {
+      logger.error('--------- File Is Required -----------');
+      return ResponseSchema('File is required.', false);
+    }
+
+    const extension = file.originalname.split('.').pop().toLowerCase();
+    const allowed = ['xls', 'xlsx', 'csv'];
+
+    if (allowed.indexOf(extension) === -1) {
+      logger.error(
+        '--------- File type is not supported. file type must be .xlsx or .xls or .csv -----------',
+      );
+      return ResponseSchema(
+        'File type is not supported. file type must be .xlsx or .xls or .csv',
+        false,
+      );
+    }
+
+    const data = await file.buffer;
+    const workbook = XLSX.read(data);
+    const workSheet = workbook.Sheets[workbook.SheetNames[0]];
+    let moviesData = XLSX.utils.sheet_to_json(workSheet);
+    moviesData = moviesData.filter((question) => question);
+    logger.info(
+      '--------- Finish Get Movies From CSV File Successfully -----------',
+    );
+    return ResponseSchema('Added Data', true, moviesData);
+  } catch (err) {
+    logger.error(
+      `--------- Error While Getting Movies From CSV File ${err?.message} -----------`,
+    );
+    throw ResponseSchema(err?.message, true, err);
+  }
+};
 
 exports.SetAddedMovieData = (movie, newAddedFieldsKeys = []) => {
   try {
@@ -33,6 +72,42 @@ exports.SetAddedMovieData = (movie, newAddedFieldsKeys = []) => {
     };
   } catch (err) {
     logger.error(`--------- Error While Setting Movie Data ${err} -----------`);
+    throw err;
+  }
+};
+
+exports.AddMoviesFromFile = async (file, newAddedFieldsKeys = []) => {
+  try {
+    const moviesData = await this.GetMoviesFromCSVFile(file);
+    if (!moviesData?.status) {
+      logger.info(
+        `--------- Error While Getting Movies From CSV Due To ${moviesData?.message} -----------`,
+      );
+      return moviesData;
+    }
+
+    const addedMoviesData = moviesData?.data?.map((movie) =>
+      this.SetAddedMovieData(movie, newAddedFieldsKeys),
+    );
+
+    const addedMovies = await this.AddMovies(addedMoviesData);
+    return ResponseSchema('Add Movies Successfully', true, addedMovies);
+  } catch (err) {
+    logger.error(`--------- Error While Setting Movie Data ${err} -----------`);
+    throw err;
+  }
+};
+
+exports.AddMovies = async (data) => {
+  try {
+    logger.info('--------- Start Add Movies -----------');
+    const addedMovies = await Movies.create(data);
+    logger.info('--------- Finish Add Movies Successfully -----------');
+    return addedMovies;
+  } catch (err) {
+    logger.error(
+      `--------- Error While Adding Movies Due To ${err} -----------`,
+    );
     throw err;
   }
 };
