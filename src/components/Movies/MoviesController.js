@@ -5,7 +5,10 @@ const {
   PaginateSchema,
   CheckValidIdObject,
 } = require('../../helper/HelperFunctions');
-const { AddMoviesFromFile } = require('./MoviesService');
+const {
+  AddMoviesFromFile,
+  SetMoviesSearchedQueryObject,
+} = require('./MoviesService');
 const {
   SetAddedMovieData,
   AddMovie,
@@ -178,8 +181,11 @@ exports.getMovieById = async (req, res) => {
 
 exports.getAllMovies = async (req, res) => {
   try {
+    const searchedQuery = SetMoviesSearchedQueryObject(req?.query);
+
     logger.info('------------------ All Movies -----------------');
-    const movies = await GetAllMovies();
+    const movies = await GetAllMovies(searchedQuery);
+
     return res.status(200).json(ResponseSchema('Movies', true, movies));
   } catch (err) {
     console.log(err);
@@ -202,12 +208,18 @@ exports.getAllMoviesWithPagination = async (req, res) => {
   try {
     const page = req.query.page - 1 || 0;
     const itemPerPage = req.query.limit || 10;
-    const count = await GetAllMoviesCount();
+    const searchedQuery = SetMoviesSearchedQueryObject(req?.query);
+    const count = await GetAllMoviesCount(searchedQuery);
     const pages = Math.ceil(count / itemPerPage);
+
     logger.info(
       '------------------ All Movies With Pagination -----------------',
     );
-    const movies = await GetAllMoviesPaginated(page, itemPerPage);
+    const movies = await GetAllMoviesPaginated(
+      page,
+      itemPerPage,
+      searchedQuery,
+    );
 
     return res
       .status(200)

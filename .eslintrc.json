@@ -10,6 +10,7 @@
   },
   "rules": {
     // "prettier/prettier": "error",
+    "node/no-unsupported-features/es-syntax": "off",
     "no-unused-vars": "warn",
     "no-unsafe-optional-chaining": "off",
     "no-console": "off",

@@ -126,10 +126,10 @@ exports.AddMovie = async (data) => {
   }
 };
 
-exports.GetAllMovies = async () => {
+exports.GetAllMovies = async (query = {}) => {
   try {
     logger.info('--------- Get All Movies -----------');
-    const movies = await Movies.find({});
+    const movies = await Movies.find(query);
     logger.info('--------- Get All Movies Successfully -----------');
     return movies;
   } catch (err) {
@@ -140,11 +140,14 @@ exports.GetAllMovies = async () => {
   }
 };
 
-exports.GetAllMoviesPaginated = async (query = {}) => {
+exports.GetAllMoviesPaginated = async (
+  page,
+  itemPerPage,
+  searchedQuery = {},
+) => {
   try {
-    const { page, itemPerPage } = query;
     logger.info('--------- Get All Movies With Pagination -----------');
-    const movies = await Movies.find({})
+    const movies = await Movies.find(searchedQuery)
       .sort({ _id: -1 })
       .skip(page * itemPerPage)
       .limit(itemPerPage);
@@ -160,10 +163,10 @@ exports.GetAllMoviesPaginated = async (query = {}) => {
   }
 };
 
-exports.GetAllMoviesCount = async () => {
+exports.GetAllMoviesCount = async (query = {}) => {
   try {
     logger.info('--------- Get All Movies Count -----------');
-    const moviesCount = await Movies.find({}).count();
+    const moviesCount = await Movies.find(query).count();
     logger.info('--------- Get All Movies Count Successfully -----------');
     return moviesCount;
   } catch (err) {
@@ -199,6 +202,31 @@ exports.CheckMovieExist = async (id) => {
   } catch (err) {
     logger.error(
       `--------- Error While Checking Movie By Id Due To ${err} -----------`,
+    );
+    throw err;
+  }
+};
+
+exports.SetMoviesSearchedQueryObject = (query = {}) => {
+  try {
+    const { title, genre } = query;
+    let searchedQuery = {};
+    if (title) {
+      searchedQuery = {
+        ...searchedQuery,
+        title: { $regex: title, $options: 'i' },
+      };
+    }
+    if (genre) {
+      searchedQuery = {
+        ...searchedQuery,
+        genre: { $regex: genre, $options: 'i' },
+      };
+    }
+    return searchedQuery;
+  } catch (err) {
+    logger.error(
+      `--------- Error While Setting Movies Searched Query Object Due To ${err} -----------`,
     );
     throw err;
   }
