@@ -5,6 +5,7 @@ const {
   PaginateSchema,
   CheckValidIdObject,
 } = require('../../helper/HelperFunctions');
+const { AddMoviesFromFile } = require('./MoviesService');
 const {
   SetAddedMovieData,
   AddMovie,
@@ -16,6 +17,35 @@ const {
   CheckMovieExist,
   UpdateMovie,
 } = require('./MoviesService');
+
+exports.addMoviesFromFile = async (req, res) => {
+  try {
+    const { newAddedFieldsKeys } = req.body;
+    const { file } = req;
+
+    logger.info('--------- Start Add Movies From File -----------');
+    await AddMoviesFromFile(file, newAddedFieldsKeys);
+    logger.info('--------- End Add Movies From File Successfully -----------');
+
+    return res
+      .status(201)
+      .json(ResponseSchema('Movies Added Successfully', true));
+  } catch (err) {
+    console.log(err);
+    logger.error(
+      `---------- Error On Add Movies From CSV File Due To: ${err} -------------`,
+    );
+    return res
+      .status(400)
+      .json(
+        ResponseSchema(
+          `Somethings Went wrong Due To :${err.message}`,
+          false,
+          errorHandler(err),
+        ),
+      );
+  }
+};
 
 exports.addMovie = async (req, res) => {
   const {
@@ -145,6 +175,7 @@ exports.getMovieById = async (req, res) => {
       );
   }
 };
+
 exports.getAllMovies = async (req, res) => {
   try {
     logger.info('------------------ All Movies -----------------');
