@@ -1,3 +1,0 @@
-{"level":"error","message":"---------- Error On Add Movie Due To: TypeError: SetAddedMovieData is not a function -------------","timestamp":"2024-05-11 17:55:59"}
-{"level":"error","message":"---------- Error On Add Movie Due To: TypeError: SetAddedMovieData is not a function -------------","timestamp":"2024-05-11 18:01:44"}
-{"level":"error","message":"---------- Error On Update Movie To: TypeError: CheckValidIdObject is not a function -------------","timestamp":"2024-05-11 18:04:34"}
