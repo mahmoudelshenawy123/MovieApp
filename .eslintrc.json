@@ -5,6 +5,9 @@
   "env": {
     "node": true 
   },
+  "parserOptions": {
+    "ecmaVersion": 2020
+  },
   "rules": {
     // "prettier/prettier": "error",
     "no-unused-vars": "warn",
