@@ -29,9 +29,12 @@ const DecodeToken = (req, res, next) => {
   next();
 };
 
+const ConvertToObjectId = (value) => mongoose.Types.ObjectId(value);
+
 module.exports = {
   ResponseSchema,
   PaginateSchema,
   DecodeToken,
+  ConvertToObjectId,
   CheckValidIdObject,
 };

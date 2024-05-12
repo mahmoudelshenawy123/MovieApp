@@ -1,7 +1,10 @@
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const { logger } = require('../../config/logger');
-const { ResponseSchema } = require('../../helper/HelperFunctions');
+const {
+  ResponseSchema,
+  ConvertToObjectId,
+} = require('../../helper/HelperFunctions');
 const { Users } = require('./UsersModel');
 
 exports.AddUser = async (data) => {
@@ -168,7 +171,10 @@ exports.CheckMovieInUserFavorite = async (id, movieId) => {
     }
 
     let itemExistInUserFavoriteds = false;
-    if (user?.favorites_movies.includes(movieId)) {
+    const movieObjectId = ConvertToObjectId(movieId);
+    if (
+      user.favorites_movies.some((favMovie) => favMovie.equals(movieObjectId))
+    ) {
       itemExistInUserFavoriteds = true;
     }
 

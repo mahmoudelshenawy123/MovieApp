@@ -1,4 +1,5 @@
 const XLSX = require('xlsx');
+const { default: axios } = require('axios');
 const { logger } = require('../../config/logger');
 const { ResponseSchema } = require('../../helper/HelperFunctions');
 const { Movies } = require('./MoviessModel');
@@ -282,6 +283,27 @@ exports.GetMovieById = async (id) => {
   }
 };
 
+exports.GetMovieDetailsFromTMDB = async (name, year) => {
+  try {
+    logger.info('--------- Get Movie From TMDB -----------');
+    const movie = await axios.get(
+      `${process.env.TMPD_API_URL}/search/movie?query=${name}&year=${year}`,
+      {
+        headers: {
+          Authorization: `Bearer ${process.env.TMPD_API_TOKEN}`,
+        },
+      },
+    );
+    logger.info('--------- Get Movie From TMDB Successfully -----------');
+    return movie?.data?.results?.[0];
+  } catch (err) {
+    logger.error(
+      `--------- Error While Getting Movie From TMDB Due To ${err} -----------`,
+    );
+    throw err;
+  }
+};
+
 exports.CheckMovieExist = async (id) => {
   try {
     const movie = await this.GetMovieById(id);
@@ -346,6 +368,53 @@ exports.UpdateMovie = async (id, data) => {
   } catch (err) {
     logger.error(
       `--------- Error While Updating Movie By Id Due To ${err} -----------`,
+    );
+    throw err;
+  }
+};
+
+exports.SyncMovieDetailsWithTMDB = async (id) => {
+  try {
+    logger.info('--------- Sync Movie Details With TMBD -----------');
+    const movie = await Movies.findById(id);
+    if (movie?.tmdb_additional_info?.length) return;
+
+    const movieDetailsTMBD = await this.GetMovieDetailsFromTMDB(
+      movie?.title,
+      movie?.year,
+    );
+    const usedKeys = [
+      'adult',
+      'backdrop_path',
+      'id',
+      'original_language',
+      'original_title',
+      'overview',
+      'popularity',
+      'video',
+      'vote_average',
+      'vote_count',
+    ];
+
+    const tmdbAdditionalInfo = usedKeys?.map((key) => {
+      return {
+        info_type: key,
+        info_value: movieDetailsTMBD[key],
+      };
+    });
+    const updatedMovieData = {
+      tmdb_additional_info: tmdbAdditionalInfo,
+    };
+
+    await this.UpdateMovie(id, updatedMovieData);
+
+    logger.info(
+      '--------- Sync Movie Details With TMBD Successfully -----------',
+    );
+    return movie;
+  } catch (err) {
+    logger.error(
+      `--------- Error While Syncing Movie Details With TMBD  Due To ${err} -----------`,
     );
     throw err;
   }

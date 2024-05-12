@@ -18,6 +18,7 @@ const {
   CheckMovieInUserFavorite,
   GetUserById,
 } = require('./UsersService');
+const { SyncMovieDetailsWithTMDB } = require('../Movies/MoviesService');
 
 exports.addUser = async (req, res) => {
   try {
@@ -245,14 +246,16 @@ exports.deleteUser = async (req, res) => {
 exports.toggleMovieInFavorite = async (req, res) => {
   try {
     const { favoriteMovieId } = req.body;
-
     const { user_id } = req.authedUser;
 
     if (!CheckValidIdObject(req, res, user_id, 'User Id is Invalid')) return;
     if (!CheckValidIdObject(req, res, favoriteMovieId, 'Movie Id is Invalid'))
       return;
-
-    if (await CheckMovieInUserFavorite(user_id, favoriteMovieId)) {
+    const isMovieAdded = await CheckMovieInUserFavorite(
+      user_id,
+      favoriteMovieId,
+    );
+    if (isMovieAdded) {
       const updatedData = {
         $pull: {
           favorites_movies: favoriteMovieId,
@@ -275,7 +278,7 @@ exports.toggleMovieInFavorite = async (req, res) => {
       },
     };
     await UpdateUser(user_id, updatedData);
-
+    await SyncMovieDetailsWithTMDB(favoriteMovieId);
     logger.info(
       '------------------ Movie Added To Favorites Successfully -----------------',
     );
