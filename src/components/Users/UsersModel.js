@@ -15,6 +15,10 @@ const UsersSchema = mongoose.Schema(
       type: String,
       required: [true, 'User Password Is Required'],
     },
+    favorites_movies: {
+      type: [mongoose.Schema.Types.ObjectId],
+      ref: 'Movie',
+    },
   },
   {
     timestamps: {

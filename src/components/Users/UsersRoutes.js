@@ -9,8 +9,13 @@ const {
   getAllUsers,
   getAllUsersWithPagination,
   getUserById,
+  toggleMovieInFavorite,
+  getAllUserFavoritedMoviesPaginated,
 } = require('./UsersController');
 const { login } = require('./UsersController');
+const { DecodeToken } = require('../../helper/HelperFunctions');
+
+router.use(DecodeToken);
 
 router.get('/all-users', getAllUsers);
 
@@ -25,5 +30,13 @@ router.post('/login', multer().none(), login);
 router.put('/update-user/:id', multer().none(), updateUser);
 
 router.delete('/delete-user/:id', multer().none(), deleteUser);
+
+router.post(
+  '/toggle-movie-from-favorite',
+  multer().none(),
+  toggleMovieInFavorite,
+);
+
+router.get('/all-favorited-movie', getAllUserFavoritedMoviesPaginated);
 
 module.exports = router;

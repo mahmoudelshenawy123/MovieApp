@@ -17,10 +17,12 @@
     "arrow-body-style": "off",
     "no-plusplus": "off",
     "no-console": "off",
+    "camelcase": "off",
     "consistent-return": "off",
     "func-names": "off",
     "no-process-exit": "off",
     "object-shorthand": "off",
-    "class-methods-use-this": "off"
+    "class-methods-use-this": "off",
+    "max-len": ["error", { "code": 140 }]
   }
 }
