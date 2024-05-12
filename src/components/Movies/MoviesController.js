@@ -63,7 +63,7 @@ exports.addMovie = async (req, res) => {
   } = req.body;
   try {
     logger.info('--------- Start Add Movie -----------');
-    const movieData = {
+    const addedMovieData = SetAddedMovieData({
       Title,
       Director,
       Year,
@@ -72,8 +72,7 @@ exports.addMovie = async (req, res) => {
       Genre,
       Colour,
       newAddedFieldsKeys,
-    };
-    const addedMovieData = SetAddedMovieData(movieData, newAddedFieldsKeys);
+    });
 
     const addedMovie = await AddMovie(addedMovieData);
     logger.info('--------- End Add Movie Successfully -----------');

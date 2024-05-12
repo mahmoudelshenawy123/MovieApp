@@ -28,7 +28,14 @@ exports.GetMoviesFromCSVFile = async (file) => {
     const workbook = XLSX.read(data);
     const workSheet = workbook.Sheets[workbook.SheetNames[0]];
     let moviesData = XLSX.utils.sheet_to_json(workSheet);
-    moviesData = moviesData.filter((question) => question);
+    moviesData = moviesData
+      ?.map((movie) => {
+        return {
+          ...movie,
+          Year: String(movie?.Year),
+        };
+      })
+      .filter((movie) => movie);
     logger.info(
       '--------- Finish Get Movies From CSV File Successfully -----------',
     );
@@ -49,8 +56,8 @@ exports.SetAddedMovieData = (movie, newAddedFieldsKeys = []) => {
       ?.map((newKey) => {
         if (movie?.[newKey]) {
           return {
-            info_value: newKey,
-            info_type: movie?.[newKey],
+            info_type: newKey,
+            info_value: movie?.[newKey],
           };
         }
         return null;
@@ -68,7 +75,9 @@ exports.SetAddedMovieData = (movie, newAddedFieldsKeys = []) => {
       length: movie?.Length,
       genre: movie?.Genre,
       colour: movie?.Colour,
-      additional_info: additionalInfo,
+      additional_info: additionalInfo?.length
+        ? additionalInfo
+        : movie?.newAddedFieldsKeys,
     };
   } catch (err) {
     logger.error(`--------- Error While Setting Movie Data ${err} -----------`);
@@ -90,10 +99,92 @@ exports.AddMoviesFromFile = async (file, newAddedFieldsKeys = []) => {
       this.SetAddedMovieData(movie, newAddedFieldsKeys),
     );
 
-    const addedMovies = await this.AddMovies(addedMoviesData);
-    return ResponseSchema('Add Movies Successfully', true, addedMovies);
+    const syncedData = await this.SyncMoviesWithDB(addedMoviesData);
+
+    return ResponseSchema('Add Movies Successfully', true, syncedData);
   } catch (err) {
     logger.error(`--------- Error While Setting Movie Data ${err} -----------`);
+    throw err;
+  }
+};
+
+exports.SyncMoviesWithDB = async (movies) => {
+  try {
+    const existingMovies = await Movies.find({});
+
+    const moviesToUpdate = [];
+    const moviesToAdd = [];
+
+    movies.forEach((movie) => {
+      const existingMovie = existingMovies.find(
+        (m) => String(m.title) === String(movie.title),
+      );
+      if (existingMovie) {
+        if (this.IsMovieNeedSync(movie, existingMovie))
+          moviesToUpdate.push(movie);
+      } else {
+        moviesToAdd.push(movie);
+      }
+    });
+
+    const updatedMovies = await Promise.all(
+      moviesToUpdate.map((movie) =>
+        Movies.findOneAndUpdate({ title: movie.title }, movie, { new: true }),
+      ),
+    );
+    const addedMovies = moviesToAdd?.length
+      ? await this.AddMovies(moviesToAdd)
+      : [];
+
+    return ResponseSchema('Add Movies Successfully', true, {
+      addedMovies,
+      updatedMovies,
+    });
+  } catch (err) {
+    logger.error(`--------- Error While Setting Movie Data ${err} -----------`);
+    throw err;
+  }
+};
+
+exports.IsMovieNeedSync = (addedMovie, existingMovie) => {
+  try {
+    const checkedKeys = [
+      'director',
+      'year',
+      'country',
+      'length',
+      'genre',
+      'colour',
+    ];
+
+    // Check for changes in standard fields
+    if (checkedKeys.some((key) => addedMovie[key] !== existingMovie[key])) {
+      return true;
+    }
+
+    // Check for changes in additional_info
+    if (
+      addedMovie?.additional_info?.length !==
+      existingMovie?.additional_info?.length
+    ) {
+      return true;
+    }
+
+    // Check each additional_info item
+    for (let i = 0; i < addedMovie?.additional_info?.length; i++) {
+      const addedInfo = addedMovie?.additional_info?.[i];
+      const existingInfo = existingMovie?.additional_info?.[i];
+      if (
+        addedInfo.info_type !== existingInfo.info_type ||
+        addedInfo.info_value !== existingInfo.info_value
+      ) {
+        return true;
+      }
+    }
+  } catch (err) {
+    logger.error(
+      `--------- Error While Is Movie Need Sync Checking Due To ${err} -----------`,
+    );
     throw err;
   }
 };
