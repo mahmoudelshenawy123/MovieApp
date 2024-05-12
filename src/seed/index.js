@@ -1,9 +1,11 @@
 require('dotenv').config();
+const bcrypt = require('bcrypt');
 const fs = require('fs');
 const path = require('path');
 const { logger } = require('../config/logger');
 const { AddMoviesFromFile } = require('../components/Movies/MoviesService');
 const DBConfig = require('../config/DBConfig');
+const { AdminUsers } = require('../components/AdminUsers/AdminUsersModel');
 
 const MovieSeedFileName = '1000GreatestFilms.csv';
 const moviesSeedingFilePath = path.join(
@@ -34,8 +36,34 @@ const addMoviesFromSeed = async () => {
   }
 };
 
+const addAdminUser = async () => {
+  try {
+    const adminUserCheck = await AdminUsers.findOne({});
+
+    if (!adminUserCheck) {
+      await AdminUsers.create({
+        email: 'admin@admin.com',
+        name: 'Initial Admin',
+        password: bcrypt.hashSync('123456', bcrypt.genSaltSync()),
+      });
+      logger.info('------------------ADMIN USER ADDED---------------------');
+    } else {
+      logger.warn(
+        '------------------ADMIN USER ALREADY ADDED---------------------',
+      );
+    }
+  } catch (error) {
+    logger.error(`ERROR IN ADMIN USER ADDED SEEDING: ${error.message}`);
+    throw error;
+  }
+};
+
 const runSeeder = async () => {
   try {
+    logger.info(
+      '=================== ADMIN SEEDING STARTED ===================',
+    );
+    await addAdminUser();
     logger.info(
       '=================== MOVIES SEEDING STARTED ===================',
     );
