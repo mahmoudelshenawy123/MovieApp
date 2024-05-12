@@ -9,6 +9,7 @@ const DBConfig = require('./src/config/DBConfig');
 const { logger } = require('./src/config/logger');
 const errorHandlers = require('./src/helper/ErrorHandler');
 const moviesRouter = require('./src/components/Movies/MoviesRoutes');
+const UsersRouter = require('./src/components/Users/UsersRoutes');
 
 const app = express();
 
@@ -24,6 +25,7 @@ app.options('*', cors());
 
 // Routes
 app.use('/movies', moviesRouter); // Use the movies router for '/movies' routes
+app.use('/users', UsersRouter); // Use the users router for '/users' routes
 
 // Error Handlers
 app.use(errorHandlers.mongooseErrorHandler); // Mongoose validation errors
