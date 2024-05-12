@@ -82,12 +82,12 @@ exports.GetAllUsersCount = async (query = {}) => {
   }
 };
 
-exports.GetUserById = async (id, selectedKeys = {}) => {
+exports.GetUserById = async (id, selectedKeys = {}, populate = []) => {
   try {
     logger.info('--------- Get User By Id -----------');
-    const user = await Users.findById(id, selectedKeys);
+    const user = await Users.findById(id, selectedKeys).populate(populate);
     logger.info('--------- Get User By Id Successfully -----------');
-    return user;
+    return user.toObject();
   } catch (err) {
     logger.error(
       `--------- Error While Getting User By Id Due To ${err} -----------`,
@@ -126,11 +126,9 @@ exports.LoginUser = async (email, password) => {
 
 exports.GenerateUserLoginToken = (user) => {
   try {
-    const userData = { ...user };
-    delete userData.password;
     const token = jwt.sign(
       {
-        user: userData,
+        user_id: user?._id,
         user_type: 'user',
       },
       process.env.JWT_SECRET,
@@ -156,6 +154,28 @@ exports.CheckUserExist = async (id, selectedKeys = {}) => {
   } catch (err) {
     logger.error(
       `--------- Error While Checking User By Id Due To ${err} -----------`,
+    );
+    throw err;
+  }
+};
+
+exports.CheckMovieInUserFavorite = async (id, movieId) => {
+  try {
+    const user = await this.GetUserById(id);
+    if (!user) {
+      logger.error('---------- User Id is wrong -------------');
+      return ResponseSchema('User Id is wrong', false);
+    }
+
+    let itemExistInUserFavoriteds = false;
+    if (user?.favorites_movies.includes(movieId)) {
+      itemExistInUserFavoriteds = true;
+    }
+
+    return itemExistInUserFavoriteds;
+  } catch (err) {
+    logger.error(
+      `--------- Error While Checking Movie In User Favorite Due To ${err} -----------`,
     );
     throw err;
   }
