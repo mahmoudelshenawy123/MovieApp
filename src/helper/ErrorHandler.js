@@ -29,6 +29,15 @@ const mongooseErrorHandler = (err, req, res, next) => {
   next(err); // Pass the error to the next middleware if it's not a validation error
 };
 
+// Error handler middleware for handling authorization errors
+const authorizationErrorHandler = (err, req, res, next) => {
+  if (err.name === 'UnauthorizedError') {
+    logger.error(err.message); // Log the error
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+  next(err); // Pass the error to the next middleware if it's not an authorization error
+};
+
 // Error handler middleware for handling unhandled errors during development
 const developmentErrorHandler = (err, req, res) => {
   logger.error(err.stack); // Log the error stack
@@ -60,5 +69,6 @@ module.exports = {
   developmentErrorHandler,
   productionErrorHandler,
   notFoundErrorHandler,
-  globalErrorHandler, // Export the global error handler middleware
+  authorizationErrorHandler,
+  globalErrorHandler,
 };

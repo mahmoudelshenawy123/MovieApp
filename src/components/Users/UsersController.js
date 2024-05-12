@@ -1,3 +1,4 @@
+const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const { logger } = require('../../config/logger');
 const { errorHandler } = require('../../helper/ErrorHandler');
@@ -14,11 +15,12 @@ const {
   GetAllUsersCount,
   GetAllUsersPaginated,
   DeleteUser,
+  LoginUser,
 } = require('./UsersService');
 
 exports.addUser = async (req, res) => {
-  const { name, email, password } = req.body;
   try {
+    const { name, email, password } = req.body;
     logger.info('--------- Start Add User -----------');
     const addedUserData = {
       name,
@@ -48,9 +50,9 @@ exports.addUser = async (req, res) => {
 };
 
 exports.updateUser = async (req, res) => {
-  const { name, email, password } = req.body;
-  const { id } = req.params;
   try {
+    const { name, email, password } = req.body;
+    const { id } = req.params;
     logger.info('--------- Start Update User -----------');
     if (!CheckValidIdObject(req, res, id, 'User Id is Invalid')) return;
     const user = await CheckUserExist(id);
@@ -168,6 +170,32 @@ exports.getAllUsersWithPagination = async (req, res) => {
       `---------- Error On Getting All Movies With Pagination Due To: ${err} -------------`,
     );
     return res
+      .status(400)
+      .json(
+        ResponseSchema(
+          `Somethings Went wrong Due To :${err.message}`,
+          false,
+          errorHandler(err),
+        ),
+      );
+  }
+};
+
+exports.login = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    const token = await LoginUser(email, password);
+
+    logger.info(
+      '------------------ User Logged Successfully -----------------',
+    );
+    res
+      .status(201)
+      .json(ResponseSchema('User Logged Successfully', true, { token }));
+  } catch (err) {
+    console.log(err);
+    logger.error(`---------- Error On Login User To: ${err} -------------`);
+    res
       .status(400)
       .json(
         ResponseSchema(
