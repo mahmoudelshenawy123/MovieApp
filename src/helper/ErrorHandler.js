@@ -2,6 +2,22 @@
 
 const { logger } = require('../config/logger');
 
+const errorHandler = (error) => {
+  let errorMessage = '';
+
+  // Check if the error is a Mongoose validation error
+  if (error.name === 'ValidationError') {
+    const validationErrors = Object.values(error.errors).map(
+      (err) => err.message,
+    );
+    errorMessage = validationErrors.join(', ');
+  } else {
+    // For other types of errors, use the error message directly
+    errorMessage = error.message || 'Internal server error';
+  }
+
+  return { error: errorMessage };
+};
 // Error handler middleware for handling Mongoose validation errors
 const mongooseErrorHandler = (err, req, res, next) => {
   if (err.name === 'ValidationError') {
@@ -39,6 +55,7 @@ const globalErrorHandler = (err, req, res) => {
 };
 
 module.exports = {
+  errorHandler,
   mongooseErrorHandler,
   developmentErrorHandler,
   productionErrorHandler,

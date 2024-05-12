@@ -8,6 +8,8 @@ const compression = require('compression');
 const DBConfig = require('./src/config/DBConfig');
 const { logger } = require('./src/config/logger');
 const errorHandlers = require('./src/helper/ErrorHandler');
+const moviesRouter = require('./src/components/Movies/MoviesRoutes');
+const UsersRouter = require('./src/components/Users/UsersRoutes');
 
 const app = express();
 
@@ -20,6 +22,10 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cors());
 app.options('*', cors());
+
+// Routes
+app.use('/movies', moviesRouter); // Use the movies router for '/movies' routes
+app.use('/users', UsersRouter); // Use the users router for '/users' routes
 
 // Error Handlers
 app.use(errorHandlers.mongooseErrorHandler); // Mongoose validation errors
@@ -34,7 +40,7 @@ app.use(errorHandlers.notFoundErrorHandler); // Not found error handler
 app.use(errorHandlers.globalErrorHandler); // Use the global error handler middleware
 
 // Start the server
-const PORT = process.env.PORT || 3000; // Default port is 3000 if not specified in .env
+const PORT = process.env.PORT || 8080; // Default port is 8080 if not specified in .env
 app.listen(PORT, () => {
   logger.info(`Server running at http://localhost:${PORT}`);
 });

@@ -5,10 +5,17 @@
   "env": {
     "node": true 
   },
+  "parserOptions": {
+    "ecmaVersion": 2020
+  },
   "rules": {
     // "prettier/prettier": "error",
+    "node/no-unsupported-features/es-syntax": "off",
     "no-unused-vars": "warn",
     "no-unsafe-optional-chaining": "off",
+    "no-underscore-dangle": "off",
+    "arrow-body-style": "off",
+    "no-plusplus": "off",
     "no-console": "off",
     "consistent-return": "off",
     "func-names": "off",
