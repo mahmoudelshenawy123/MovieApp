@@ -125,7 +125,7 @@ exports.getAllUsers = async (req, res) => {
   } catch (err) {
     console.log(err);
     logger.error(
-      `---------- Error On Getting All Movies Due To: ${err} -------------`,
+      `---------- Error On Getting All Users Due To: ${err} -------------`,
     );
     return res
       .status(400)
@@ -169,7 +169,7 @@ exports.getAllUsersWithPagination = async (req, res) => {
   } catch (err) {
     console.log(err);
     logger.error(
-      `---------- Error On Getting All Movies With Pagination Due To: ${err} -------------`,
+      `---------- Error On Getting All Users With Pagination Due To: ${err} -------------`,
     );
     return res
       .status(400)
@@ -186,14 +186,21 @@ exports.getAllUsersWithPagination = async (req, res) => {
 exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
-    const token = await LoginUser(email, password);
-
+    const loggedStatus = await LoginUser(email, password);
+    if (!loggedStatus.status) {
+      res.status(404).json(ResponseSchema(loggedStatus?.message, false));
+      return;
+    }
     logger.info(
       '------------------ User Logged Successfully -----------------',
     );
     res
       .status(201)
-      .json(ResponseSchema('User Logged Successfully', true, { token }));
+      .json(
+        ResponseSchema('User Logged Successfully', true, {
+          token: loggedStatus?.data,
+        }),
+      );
   } catch (err) {
     console.log(err);
     logger.error(`---------- Error On Login User To: ${err} -------------`);

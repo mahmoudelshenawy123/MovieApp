@@ -10,6 +10,7 @@ const { logger } = require('./src/config/logger');
 const errorHandlers = require('./src/helper/ErrorHandler');
 const moviesRouter = require('./src/components/Movies/MoviesRoutes');
 const UsersRouter = require('./src/components/Users/UsersRoutes');
+const AdminUsersRouter = require('./src/components/AdminUsers/AdminUsersRoutes');
 const authJwt = require('./src/middleware/auth');
 
 const app = express();
@@ -28,6 +29,7 @@ app.use(authJwt());
 // Routes
 app.use('/movies', moviesRouter); // Use the movies router for '/movies' routes
 app.use('/users', UsersRouter); // Use the users router for '/users' routes
+app.use('/admin-users', AdminUsersRouter); // Use the admin users router for '/admin-users' routes
 
 // Error Handlers
 app.use(errorHandlers.mongooseErrorHandler); // Mongoose validation errors

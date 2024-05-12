@@ -90,7 +90,7 @@ exports.GetUserById = async (id, selectedKeys = {}, populate = []) => {
     logger.info('--------- Get User By Id -----------');
     const user = await Users.findById(id, selectedKeys).populate(populate);
     logger.info('--------- Get User By Id Successfully -----------');
-    return user.toObject();
+    return user?.toObject();
   } catch (err) {
     logger.error(
       `--------- Error While Getting User By Id Due To ${err} -----------`,
@@ -114,7 +114,7 @@ exports.LoginUser = async (email, password) => {
         api_token: generatedLoginToken,
       };
       await this.UpdateUser(user?._id, updatedData);
-      return generatedLoginToken;
+      return ResponseSchema('Token', true, generatedLoginToken);
     }
 
     logger.error('---------- Wrong User Credentials -------------');
