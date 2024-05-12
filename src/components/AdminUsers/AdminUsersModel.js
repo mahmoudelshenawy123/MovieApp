@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-const UsersSchema = mongoose.Schema(
+const AdminUsersSchema = mongoose.Schema(
   {
     name: {
       type: String,
@@ -18,10 +18,6 @@ const UsersSchema = mongoose.Schema(
     api_token: {
       type: String,
     },
-    favorites_movies: {
-      type: [mongoose.Schema.Types.ObjectId],
-      ref: 'Movie',
-    },
   },
   {
     timestamps: {
@@ -31,4 +27,4 @@ const UsersSchema = mongoose.Schema(
   },
 );
 
-module.exports.Users = mongoose.model('User', UsersSchema);
+module.exports.AdminUsers = mongoose.model('AdminUser', AdminUsersSchema);
