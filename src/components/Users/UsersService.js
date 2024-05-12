@@ -1,3 +1,5 @@
+const jwt = require('jsonwebtoken');
+const bcrypt = require('bcrypt');
 const { logger } = require('../../config/logger');
 const { ResponseSchema } = require('../../helper/HelperFunctions');
 const { Users } = require('./UsersModel');
@@ -89,6 +91,55 @@ exports.GetUserById = async (id, selectedKeys = {}) => {
   } catch (err) {
     logger.error(
       `--------- Error While Getting User By Id Due To ${err} -----------`,
+    );
+    throw err;
+  }
+};
+
+exports.LoginUser = async (email, password) => {
+  try {
+    logger.info('--------- Login User By Query -----------');
+    const user = await Users.findOne({ email });
+    if (!user) {
+      logger.error("---------- User Email doesn't Exist -------------");
+      return ResponseSchema("User Email doesn't Exist", false);
+    }
+
+    if (bcrypt.compareSync(password, user?.password)) {
+      const generatedLoginToken = this.GenerateUserLoginToken(user);
+      const updatedData = {
+        api_token: generatedLoginToken,
+      };
+      await this.UpdateUser(user?._id, updatedData);
+      return generatedLoginToken;
+    }
+
+    logger.error('---------- Wrong User Credentials -------------');
+    return ResponseSchema('Wrong User Credentials', false);
+  } catch (err) {
+    logger.error(
+      `--------- Error While Getting User By Query Due To ${err} -----------`,
+    );
+    throw err;
+  }
+};
+
+exports.GenerateUserLoginToken = (user) => {
+  try {
+    const userData = { ...user };
+    delete userData.password;
+    const token = jwt.sign(
+      {
+        user: userData,
+        user_type: 'user',
+      },
+      process.env.JWT_SECRET,
+    );
+
+    return token;
+  } catch (err) {
+    logger.error(
+      `--------- Error While Generating Token Due To ${err} -----------`,
     );
     throw err;
   }
