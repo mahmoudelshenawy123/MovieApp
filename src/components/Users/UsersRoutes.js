@@ -13,8 +13,8 @@ const {
   getAllUserFavoritedMoviesPaginated,
 } = require('./UsersController');
 const { login } = require('./UsersController');
-const { DecodeToken } = require('../../helper/HelperFunctions');
-const { isAuthorized } = require('../../middleware/authMiddlewares');
+const { DecodeToken } = require('@src/helper/HelperFunctions');
+const { isAuthorized } = require('@src/middleware/authMiddlewares');
 
 router.use(DecodeToken);
 

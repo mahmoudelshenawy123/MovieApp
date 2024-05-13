@@ -1,48 +1,45 @@
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
-const { logger } = require('../../config/logger');
+const { logger } = require('@src/config/logger');
 const {
   ResponseSchema,
   ConvertToObjectId,
-} = require('../../helper/HelperFunctions');
+} = require('@src/helper/HelperFunctions');
 const { Users } = require('./UsersModel');
+const { LogInfo, LogError } = require('@src/helper/HelperFunctions');
 
 exports.AddUser = async (data) => {
   try {
-    logger.info('--------- Start Add User -----------');
+    LogInfo(`Start Add User`);
     const addedUser = await Users.create(data);
-    logger.info('--------- Finish Add User Successfully -----------');
+    LogInfo(`Finish Add User Successfully`);
     return addedUser;
   } catch (err) {
-    logger.error(`--------- Error While Adding User Due To ${err} -----------`);
+    LogError(`Error While Adding User Due To ${err}`);
     throw err;
   }
 };
 
 exports.UpdateUser = async (id, data) => {
   try {
-    logger.info('--------- Update User By Id -----------');
+    LogInfo(`Update User By Id`);
     const user = await Users.findByIdAndUpdate(id, data);
-    logger.info('--------- Update User By Id Successfully -----------');
+    LogInfo(`Update User By Id Successfully`);
     return user;
   } catch (err) {
-    logger.error(
-      `--------- Error While Updating User By Id Due To ${err} -----------`,
-    );
+    LogError(`Error While Updating User By Id Due To ${err}`);
     throw err;
   }
 };
 
 exports.GetAllUsers = async (query = {}, selectedKeys = {}) => {
   try {
-    logger.info('--------- Get All Users -----------');
+    LogInfo(`Get All Users`);
     const users = await Users.find(query, selectedKeys);
-    logger.info('--------- Get All Users Successfully -----------');
+    LogInfo(`Get All Users Successfully`);
     return users;
   } catch (err) {
-    logger.error(
-      `--------- Error While Getting All Users Due To ${err} -----------`,
-    );
+    LogError(`Error While Getting All Users Due To ${err}`);
     throw err;
   }
 };
@@ -54,57 +51,49 @@ exports.GetAllUsersPaginated = async (
   selectedKeys = {},
 ) => {
   try {
-    logger.info('--------- Get All Users With Pagination -----------');
+    LogInfo(`Get All Users With Pagination`);
     const users = await Users.find(searchedQuery, selectedKeys)
       .sort({ _id: -1 })
       .skip(page * itemPerPage)
       .limit(itemPerPage);
-    logger.info(
-      '--------- Get All Users With Pagination Successfully -----------',
-    );
+    LogInfo(`Get All Users With Pagination Successfully`);
     return users;
   } catch (err) {
-    logger.error(
-      `--------- Error While Getting All Users With Pagination Due To ${err} -----------`,
-    );
+    LogError(`Error While Getting All Users With Pagination Due To ${err}`);
     throw err;
   }
 };
 
 exports.GetAllUsersCount = async (query = {}) => {
   try {
-    logger.info('--------- Get All Users Count -----------');
+    LogInfo(`Get All Users Count`);
     const usersCount = await Users.find(query).count();
-    logger.info('--------- Get All Users Count Successfully -----------');
+    LogInfo(`Get All Users Count Successfully`);
     return usersCount;
   } catch (err) {
-    logger.error(
-      `--------- Error While Getting All Users Count Due To ${err} -----------`,
-    );
+    LogError(`Error While Getting All Users Count Due To ${err}`);
     throw err;
   }
 };
 
 exports.GetUserById = async (id, selectedKeys = {}, populate = []) => {
   try {
-    logger.info('--------- Get User By Id -----------');
+    LogInfo(`Get User By Id`);
     const user = await Users.findById(id, selectedKeys).populate(populate);
-    logger.info('--------- Get User By Id Successfully -----------');
+    LogInfo(`Get User By Id Successfully`);
     return user?.toObject();
   } catch (err) {
-    logger.error(
-      `--------- Error While Getting User By Id Due To ${err} -----------`,
-    );
+    LogError(`Error While Getting User By Id Due To ${err}`);
     throw err;
   }
 };
 
 exports.LoginUser = async (email, password) => {
   try {
-    logger.info('--------- Login User By Query -----------');
+    LogInfo(`Login User By Query`);
     const user = await Users.findOne({ email });
     if (!user) {
-      logger.error("---------- User Email doesn't Exist -------------");
+      LogError(`User Email doesn't Exist`);
       return ResponseSchema("User Email doesn't Exist", false);
     }
 
@@ -117,12 +106,10 @@ exports.LoginUser = async (email, password) => {
       return ResponseSchema('Token', true, generatedLoginToken);
     }
 
-    logger.error('---------- Wrong User Credentials -------------');
+    LogError(`Wrong User Credentials`);
     return ResponseSchema('Wrong User Credentials', false);
   } catch (err) {
-    logger.error(
-      `--------- Error While Getting User By Query Due To ${err} -----------`,
-    );
+    LogError(`Error While Getting User By Query Due To ${err}`);
     throw err;
   }
 };
@@ -139,9 +126,7 @@ exports.GenerateUserLoginToken = (user) => {
 
     return token;
   } catch (err) {
-    logger.error(
-      `--------- Error While Generating Token Due To ${err} -----------`,
-    );
+    LogError(`Error While Generating Token Due To ${err}`);
     throw err;
   }
 };
@@ -150,14 +135,12 @@ exports.CheckUserExist = async (id, selectedKeys = {}) => {
   try {
     const user = await this.GetUserById(id, selectedKeys);
     if (!user) {
-      logger.error('---------- User Id is wrong -------------');
+      LogError(`User Id is wrong`);
       return ResponseSchema('User Id is wrong', false);
     }
     return ResponseSchema('User', true, user);
   } catch (err) {
-    logger.error(
-      `--------- Error While Checking User By Id Due To ${err} -----------`,
-    );
+    LogError(`Error While Checking User By Id Due To ${err}`);
     throw err;
   }
 };
@@ -166,7 +149,7 @@ exports.CheckMovieInUserFavorite = async (id, movieId) => {
   try {
     const user = await this.GetUserById(id);
     if (!user) {
-      logger.error('---------- User Id is wrong -------------');
+      LogError(`User Id is wrong`);
       return ResponseSchema('User Id is wrong', false);
     }
 
@@ -180,23 +163,19 @@ exports.CheckMovieInUserFavorite = async (id, movieId) => {
 
     return itemExistInUserFavoriteds;
   } catch (err) {
-    logger.error(
-      `--------- Error While Checking Movie In User Favorite Due To ${err} -----------`,
-    );
+    LogError(`Error While Checking Movie In User Favorite Due To ${err}`);
     throw err;
   }
 };
 
 exports.DeleteUser = async (id) => {
   try {
-    logger.info('--------- Delete User By Id -----------');
+    LogInfo(`Delete User By Id`);
     const user = await Users.findByIdAndDelete(id);
-    logger.info('--------- Delete User By Id Successfully -----------');
+    LogInfo(`Delete User By Id Successfully`);
     return user;
   } catch (err) {
-    logger.error(
-      `--------- Error While Deleteing User By Id Due To ${err} -----------`,
-    );
+    LogError(`Error While Deleteing User By Id Due To ${err}`);
     throw err;
   }
 };

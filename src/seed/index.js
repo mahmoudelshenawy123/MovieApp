@@ -2,15 +2,15 @@ require('dotenv').config();
 const bcrypt = require('bcrypt');
 const fs = require('fs');
 const path = require('path');
-const { logger } = require('../config/logger');
-const { AddMoviesFromFile } = require('../components/Movies/MoviesService');
-const DBConfig = require('../config/DBConfig');
-const { AdminUsers } = require('../components/AdminUsers/AdminUsersModel');
+const { AddMoviesFromFile } = require('@src/components/Movies/MoviesService');
+const DBConfig = require('@src/config/DBConfig');
+const { AdminUsers } = require('@src/components/AdminUsers/AdminUsersModel');
+const { LogInfo, LogError, LogWarn } = require('@src/helper/HelperFunctions');
 
 const MovieSeedFileName = '1000GreatestFilms.csv';
 const moviesSeedingFilePath = path.join(
   __dirname,
-  '../documents',
+  '@src/documents',
   MovieSeedFileName,
 );
 
@@ -18,21 +18,17 @@ DBConfig();
 
 const addMoviesFromSeed = async () => {
   try {
-    logger.info(
-      '------------------ MOVIES SEEDING STARTED ---------------------',
-    );
+    LogInfo(`MOVIES SEEDING STARTED`);
     const moviesSeedingFileBuffer = fs.readFileSync(moviesSeedingFilePath);
     const fileDetails = {
       buffer: moviesSeedingFileBuffer,
       originalname: MovieSeedFileName,
     };
     await AddMoviesFromFile(fileDetails, []);
-    logger.info(
-      '------------------ MOVIES SEEDING FINISHED SUCCESSFULLY ---------------------',
-    );
+    LogInfo(`MOVIES SEEDING FINISHED SUCCESSFULLY`);
   } catch (error) {
-    logger.error(`ERROR IN MOVIES SEEDING: ${error.message}`);
-    throw error; // Rethrow the error to propagate it
+    LogError(`ERROR IN MOVIES SEEDING: ${error.message}`);
+    throw error;
   }
 };
 
@@ -46,34 +42,30 @@ const addAdminUser = async () => {
         name: 'Initial Admin',
         password: bcrypt.hashSync('123456', bcrypt.genSaltSync()),
       });
-      logger.info('------------------ADMIN USER ADDED---------------------');
+      LogInfo(`ADMIN USER ADDED`);
     } else {
-      logger.warn(
-        '------------------ADMIN USER ALREADY ADDED---------------------',
-      );
+      LogWarn(`ADMIN USER ALREADY ADDED`);
     }
   } catch (error) {
-    logger.error(`ERROR IN ADMIN USER ADDED SEEDING: ${error.message}`);
+    LogError(`ERROR IN ADMIN USER ADDED SEEDING: ${error.message}`);
     throw error;
   }
 };
 
 const runSeeder = async () => {
   try {
-    logger.info(
-      '=================== ADMIN SEEDING STARTED ===================',
-    );
+    LogInfo(`ADMIN SEEDING STARTED`);
     await addAdminUser();
-    logger.info(
-      '=================== MOVIES SEEDING STARTED ===================',
-    );
+
+    LogInfo(`MOVIES SEEDING STARTED`);
     await addMoviesFromSeed();
-    logger.info('=================== MOVIES SEEDING DONE ===================');
+
+    LogInfo(`MOVIES SEEDING DONE`);
   } catch (error) {
-    logger.error('ERROR IN SEEDING:', error.message);
+    LogError(`'ERROR IN SEEDING:', error.message`);
   } finally {
-    logger.info('SEEDING COMPLETE');
-    process.exit(); // Exit the process after seeding is done
+    LogInfo(`SEEDING COMPLETE`);
+    process.exit();
   }
 };
 

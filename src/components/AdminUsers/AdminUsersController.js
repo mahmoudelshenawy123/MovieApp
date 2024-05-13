@@ -1,11 +1,12 @@
 const bcrypt = require('bcrypt');
-const { logger } = require('../../config/logger');
-const { errorHandler } = require('../../helper/ErrorHandler');
+const { errorHandler } = require('@src/helper/ErrorHandler');
 const {
   ResponseSchema,
   PaginateSchema,
   CheckValidIdObject,
-} = require('../../helper/HelperFunctions');
+  LogInfo,
+  LogError,
+} = require('@src/helper/HelperFunctions');
 const {
   AddAdminUser,
   CheckAdminUserExist,
@@ -20,7 +21,7 @@ const {
 exports.addAdminUser = async (req, res) => {
   try {
     const { name, email, password } = req.body;
-    logger.info('--------- Start Add Admin User -----------');
+    LogInfo('Start Add Admin User');
     const addedAdminUserData = {
       name,
       email,
@@ -28,16 +29,12 @@ exports.addAdminUser = async (req, res) => {
     };
 
     const addedUser = await AddAdminUser(addedAdminUserData);
-    logger.info('--------- End Add Admin User Successfully -----------');
-
+    LogInfo('End Add Admin User Successfully');
     return res
       .status(201)
       .json(ResponseSchema('Admin User Added Successfully', true, addedUser));
   } catch (err) {
-    console.log(err);
-    logger.error(
-      `---------- Error On Add Admin User Due To: ${err} -------------`,
-    );
+    LogError(`Error On Add Admin User Due To: ${err}`);
     return res
       .status(400)
       .json(
@@ -54,12 +51,11 @@ exports.updateAdminUser = async (req, res) => {
   try {
     const { name, email, password } = req.body;
     const { id } = req.params;
-    logger.info('--------- Start Update Admin User -----------');
+    LogInfo('Start Update Admin User');
     if (!CheckValidIdObject(req, res, id, 'Admin User Id is Invalid')) return;
     const user = await CheckAdminUserExist(id);
     if (!user.status) {
-      res.status(404).json(ResponseSchema(user.message, false));
-      return;
+      return res.status(404).json(ResponseSchema(user.message, false));
     }
     const updatedAdminUserData = {
       name,
@@ -68,20 +64,16 @@ exports.updateAdminUser = async (req, res) => {
     };
 
     const updatedUser = await UpdateAdminUser(id, updatedAdminUserData);
-    logger.info('--------- End Update Admin User Successfully -----------');
 
-    res
+    LogInfo('End Update Admin User Successfully');
+    return res
       .status(201)
       .json(
         ResponseSchema('Admin User Updated Successfully', true, updatedUser),
       );
-    return;
   } catch (err) {
-    console.log(err);
-    logger.error(
-      `---------- Error On Update Admin User To: ${err} -------------`,
-    );
-    res
+    LogError(`Error On Update Admin User To: ${err}`);
+    return res
       .status(400)
       .json(
         ResponseSchema(
@@ -96,22 +88,16 @@ exports.updateAdminUser = async (req, res) => {
 exports.getAdminUserById = async (req, res) => {
   try {
     const { id } = req.params;
-    logger.info(
-      `------------------ Admin User with ID ${id} -----------------`,
-    );
 
+    LogInfo(`Admin User with ID ${id}`);
     if (!CheckValidIdObject(req, res, id, 'Admin User Id is Invalid')) return;
     const user = await CheckAdminUserExist(id, { password: 0 });
     if (!user.status) {
-      res.status(404).json(ResponseSchema(user.message, false));
-      return;
+      return res.status(404).json(ResponseSchema(user.message, false));
     }
     return res.status(200).json(ResponseSchema('Admin User', true, user?.data));
   } catch (err) {
-    console.log(err);
-    logger.error(
-      `---------- Error On Getting Admin User By ID ${err} -------------`,
-    );
+    LogError(`Error On Getting Admin User By ID ${err}`);
     return res
       .status(400)
       .json(
@@ -126,14 +112,11 @@ exports.getAdminUserById = async (req, res) => {
 
 exports.getAllAdminUsers = async (req, res) => {
   try {
-    logger.info('------------------ All Admin Users -----------------');
+    LogInfo('All Admin Users');
     const users = await GetAllAdminUsers({}, { password: 0 });
     return res.status(200).json(ResponseSchema('Users', true, users));
   } catch (err) {
-    console.log(err);
-    logger.error(
-      `---------- Error On Getting All Admin Users Due To: ${err} -------------`,
-    );
+    LogError(`Error On Getting All Admin Users Due To: ${err}`);
     return res
       .status(400)
       .json(
@@ -153,9 +136,8 @@ exports.getAllAdminUsersWithPagination = async (req, res) => {
     const count = await GetAllAdminUsersCount();
     const pages = Math.ceil(count / itemPerPage);
 
-    logger.info(
-      '------------------ All Admin Users With Pagination -----------------',
-    );
+    LogInfo('All Admin Users With Pagination');
+
     const users = await GetAllAdminUsersPaginated(
       page,
       itemPerPage,
@@ -174,10 +156,7 @@ exports.getAllAdminUsersWithPagination = async (req, res) => {
         ),
       );
   } catch (err) {
-    console.log(err);
-    logger.error(
-      `---------- Error On Getting All Admin With Pagination Due To: ${err} -------------`,
-    );
+    LogError(`Error On Getting All Admin With Pagination Due To: ${err}`);
     return res
       .status(400)
       .json(
@@ -195,23 +174,17 @@ exports.login = async (req, res) => {
     const { email, password } = req.body;
     const loggedStatus = await LoginAdminUser(email, password);
     if (!loggedStatus.status) {
-      res.status(404).json(ResponseSchema(loggedStatus?.message, false));
-      return;
+      return res.status(404).json(ResponseSchema(loggedStatus?.message, false));
     }
-    logger.info(
-      '------------------ Admin User Logged Successfully -----------------',
-    );
-    res.status(201).json(
+    LogInfo('Admin User Logged Successfully');
+    return res.status(201).json(
       ResponseSchema('Admin User Logged Successfully', true, {
         token: loggedStatus?.data,
       }),
     );
   } catch (err) {
-    console.log(err);
-    logger.error(
-      `---------- Error On Login Admin User To: ${err} -------------`,
-    );
-    res
+    LogError(`Error On Login Admin User To: ${err}`);
+    return res
       .status(400)
       .json(
         ResponseSchema(
@@ -226,34 +199,26 @@ exports.login = async (req, res) => {
 exports.deleteAdminUser = async (req, res) => {
   try {
     const { id } = req.params;
-
-    logger.info(
-      '------------------ Start Admin User Deleteing -----------------',
-    );
+    LogInfo(`Start Admin User Deleteing`);
     if (!CheckValidIdObject(req, res, id, 'Admin User Id is Invalid')) return;
     const user = await CheckAdminUserExist(id);
     if (!user.status) {
-      res.status(404).json(ResponseSchema(user.message, false));
-      return;
+      return res.status(404).json(ResponseSchema(user.message, false));
     }
     const deletedStatus = await DeleteAdminUser(id, req);
     if (!deletedStatus.status) {
-      res.status(404).json(ResponseSchema(deletedStatus?.message, false));
-      return;
+      return res
+        .status(404)
+        .json(ResponseSchema(deletedStatus?.message, false));
     }
-    logger.info(
-      '------------------ Admin User Deleted Successfully -----------------',
-    );
-    res
+    LogInfo(`Admin User Deleted Successfully`);
+    return res
       .status(201)
       .json(ResponseSchema('Admin User Deleted Successfully', true));
-    return;
   } catch (err) {
-    console.log(err);
-    logger.error(
-      `---------- Error On Deleteing Admin User Due To: ${err} -------------`,
-    );
-    res
+    LogError(`Error On Deleteing Admin User Due To: ${err}`);
+
+    return res
       .status(400)
       .json(
         ResponseSchema(
