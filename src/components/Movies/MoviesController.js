@@ -215,8 +215,8 @@ exports.getAllMoviesWithPagination = async (req, res) => {
       '------------------ All Movies With Pagination -----------------',
     );
     const movies = await GetAllMoviesPaginated(
-      page,
-      itemPerPage,
+      Number(page),
+      Number(itemPerPage),
       searchedQuery,
     );
 
