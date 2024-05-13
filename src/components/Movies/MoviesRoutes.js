@@ -11,8 +11,8 @@ const {
   getMovieById,
 } = require('./MoviesController');
 const { addMoviesFromFile } = require('./MoviesController');
-const { isAuthorized } = require('../../middleware/authMiddlewares');
-const { DecodeToken } = require('../../helper/HelperFunctions');
+const { isAuthorized } = require('@src/middleware/authMiddlewares');
+const { DecodeToken } = require('@src/helper/HelperFunctions');
 
 const upload = multer().single('movies_file');
 

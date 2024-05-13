@@ -11,8 +11,8 @@ const {
   deleteAdminUser,
 } = require('./AdminUsersController');
 const { login } = require('./AdminUsersController');
-const { DecodeToken } = require('../../helper/HelperFunctions');
-const { isAuthorized } = require('../../middleware/authMiddlewares');
+const { DecodeToken } = require('@src/helper/HelperFunctions');
+const { isAuthorized } = require('@src/middleware/authMiddlewares');
 
 router.use(DecodeToken);
 
