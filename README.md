@@ -25,7 +25,8 @@ Before you begin, ensure you have met the following requirements:
 
 ## Scripts
 
-- `npm start`: Start the server using nodemon.
+- `npm start:dev`: Start the server in development mode using nodemon.
+- `npm start:staging`: Start the server in staging mode using nodemon.
 - `npm run lint`: Lint source files using ESLint.
 - `npm run seed`: Seed data into the database.
 - `npm run lint:fix`: Fix linting errors automatically.
