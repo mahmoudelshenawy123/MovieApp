@@ -1,0 +1,31 @@
+version: '3.8'
+
+services:
+  mongodb:
+    image: mongo:latest
+    container_name: mongodb
+    ports:
+      - '27017:27017'
+    volumes:
+      - mongodb_data:/data/db
+
+  movieapp:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: movieapp
+    depends_on:
+      - mongodb
+    environment:
+      - PORT=8080
+      - CONNECTION_STRING=mongodb://mongodb:27017
+      - DB_NAME=MovieApp
+      - ENV=DEVELOPMENT
+      - JWT_SECRET=dDsdagWTYhsg4a56s45fs89e74&435646556!ewqe3%dasdsad465as465sa$4563245
+      - TMPD_API_URL=https://api.themoviedb.org/3/
+      - TMPD_API_TOKEN=eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJmMGIyNGVmMTllMGMwMmMyZmUyNTEwZDViN2VmZTQ1YSIsInN1YiI6IjY2M2QyMWIxZDA2NzRmMjYwMWRiYjM5NCIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.tLt8SVrECnZW6LmrHLixKtxh4DsWLJO87NWNSykIiug
+    ports:
+      - '8080:8080'
+
+volumes:
+  mongodb_data:
