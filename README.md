@@ -36,7 +36,9 @@ Before you begin, ensure you have met the following requirements:
 ```shell
 .
 ├── .dockerignore
-├── .env
+├── .env.dev
+├── .env.docker
+├── .env.staging
 ├── .eslintrc.json
 ├── .gitignore
 ├── .prettierrc.json
