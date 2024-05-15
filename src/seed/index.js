@@ -1,4 +1,6 @@
-require('dotenv').config();
+require('dotenv').config({ path: `.env.${process.env.NODE_ENV}` });
+require('../config/ModuleAliases');
+
 const bcrypt = require('bcrypt');
 const fs = require('fs');
 const path = require('path');
@@ -10,7 +12,7 @@ const { LogInfo, LogError, LogWarn } = require('@src/helper/HelperFunctions');
 const MovieSeedFileName = '1000GreatestFilms.csv';
 const moviesSeedingFilePath = path.join(
   __dirname,
-  '@src/documents',
+  '../documents',
   MovieSeedFileName,
 );
 
