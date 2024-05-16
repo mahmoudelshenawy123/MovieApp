@@ -22,7 +22,7 @@ exports.AddAdminUser = async (data) => {
 exports.UpdateAdminUser = async (id, data) => {
   try {
     LogInfo(`Update Admin User By Id`);
-    const user = await AdminUsers.findByIdAndUpdate(id, data);
+    const user = await AdminUsers.findByIdAndUpdate(id, data, { new: true });
     LogInfo(`Update Admin User By Id Successfully`);
     return user;
   } catch (err) {

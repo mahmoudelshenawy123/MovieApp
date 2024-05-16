@@ -12,7 +12,7 @@ const {
   setInCache,
   getFromCache,
 } = require('@src/helper/Cache');
-const { MOVIES_CACHE } = require('@src/helper/Keys');
+const { MOVIES_CACHE } = require('@src/constants/Keys');
 
 exports.GetMoviesFromCSVFile = async (file) => {
   try {
@@ -324,6 +324,18 @@ exports.GetMovieById = async (id) => {
   }
 };
 
+exports.GetMovieForTest = async () => {
+  try {
+    LogInfo(`Get Movie For Test`);
+    const movie = await Movies.findOne({});
+    LogInfo(`Get Movie For Test Successfully`);
+    return movie;
+  } catch (err) {
+    LogError(`Error While Getting Movie For Test Due To ${err}`);
+    throw err;
+  }
+};
+
 exports.GetMovieDetailsFromTMDB = async (name, year) => {
   try {
     LogInfo(`Get Movie From TMDB`);
@@ -423,7 +435,7 @@ exports.DeleteMovie = async (id) => {
 exports.UpdateMovie = async (id, data) => {
   try {
     LogInfo(`Update Movie By Id`);
-    const movie = await Movies.findByIdAndUpdate(id, data);
+    const movie = await Movies.findByIdAndUpdate(id, data, { new: true });
     LogInfo(`Update Movie By Id Successfully`);
 
     this.RemoveMovieCache();

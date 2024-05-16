@@ -13,7 +13,8 @@
     "import/resolver": {
       "alias": {
         "map": [
-          ["@src", "./src"]
+          ["@src", "./src"],
+          ["@", "./"]
         ],
         "extensions": [".js", ".jsx", ".json"]
       }

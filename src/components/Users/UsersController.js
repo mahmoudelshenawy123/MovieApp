@@ -1,5 +1,7 @@
 const bcrypt = require('bcrypt');
-const { errorHandler, LogInfo, LogError } = require('@src/helper/ErrorHandler');
+const { errorHandler } = require('@src/helper/ErrorHandler');
+const { LogInfo, LogError } = require('@src/helper/HelperFunctions');
+
 const {
   ResponseSchema,
   PaginateSchema,
