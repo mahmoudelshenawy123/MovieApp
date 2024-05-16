@@ -4,9 +4,10 @@
   "description": "",
   "main": "app.js",
   "scripts": {
-    "start": "nodemon app.js",
+    "start:dev": "cross-env NODE_ENV=dev nodemon app.js",
+    "start:staging": "cross-env NODE_ENV=staging nodemon app.js",
     "lint": "eslint src/**",
-    "seed": "node ./src/seed",
+    "seed": "cross-env NODE_ENV=dev node ./src/seed",
     "lint:fix": "eslint --fix src/**"
   },
   "author": "",
@@ -32,6 +33,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.2.0",
+    "cross-env": "^7.0.3",
     "eslint": "^8.2.0",
     "eslint-config-airbnb": "^19.0.4",
     "eslint-config-airbnb-base": "^15.0.0",

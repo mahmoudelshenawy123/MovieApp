@@ -1,6 +1,6 @@
 // app.js
-require('dotenv').config();
 require('./src/config/ModuleAliases');
+require('dotenv').config({ path: `.env.${process.env.NODE_ENV}` });
 
 const express = require('express');
 const cors = require('cors');

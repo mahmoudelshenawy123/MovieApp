@@ -19,23 +19,30 @@ Before you begin, ensure you have met the following requirements:
 
 ## Usage
 
-1. Set up environment variables by creating a `.env` file based on the provided `.env.example`.
-2. Start the server using `npm start`.
+1. Set up environment variables by creating a `.env` file based on the provided `.env.dev`.
+2. Start the server using `npm run start:dev`.
 3. The server will be running locally on port specified in the environment variable `PORT` or default port 8080.
 
 ## Scripts
 
-- `npm start`: Start the server using nodemon.
+- `npm run start:dev`: Start the server in development mode using nodemon.
+- `npm run start:staging`: Start the server in staging mode using nodemon.
 - `npm run lint`: Lint source files using ESLint.
 - `npm run seed`: Seed data into the database.
 - `npm run lint:fix`: Fix linting errors automatically.
+
+## API Documentation
+
+- Postman Collection Url : https://documenter.getpostman.com/view/23899137/2sA3JRYyV8
 
 ## Project Structure
 
 ```shell
 .
 ├── .dockerignore
-├── .env
+├── .env.dev
+├── .env.docker
+├── .env.staging
 ├── .eslintrc.json
 ├── .gitignore
 ├── .prettierrc.json
