@@ -1,10 +1,11 @@
-const { logger } = require('../../config/logger');
-const { errorHandler } = require('../../helper/ErrorHandler');
+const { errorHandler } = require('@src/helper/ErrorHandler');
 const {
   ResponseSchema,
   PaginateSchema,
   CheckValidIdObject,
-} = require('../../helper/HelperFunctions');
+  LogError,
+  LogInfo,
+} = require('@src/helper/HelperFunctions');
 const {
   AddMoviesFromFile,
   SetMoviesSearchedQueryObject,
@@ -26,18 +27,15 @@ exports.addMoviesFromFile = async (req, res) => {
     const { newAddedFieldsKeys } = req.body;
     const { file } = req;
 
-    logger.info('--------- Start Add Movies From File -----------');
+    LogInfo(`Start Add Movies From File`);
     await AddMoviesFromFile(file, newAddedFieldsKeys);
-    logger.info('--------- End Add Movies From File Successfully -----------');
+    LogInfo(`End Add Movies From File Successfully`);
 
     return res
       .status(201)
       .json(ResponseSchema('Movies Added Successfully', true));
   } catch (err) {
-    console.log(err);
-    logger.error(
-      `---------- Error On Add Movies From CSV File Due To: ${err} -------------`,
-    );
+    LogError(`Error On Add Movies From CSV File Due To: ${err}`);
     return res
       .status(400)
       .json(
@@ -62,7 +60,7 @@ exports.addMovie = async (req, res) => {
     newAddedFieldsKeys,
   } = req.body;
   try {
-    logger.info('--------- Start Add Movie -----------');
+    LogInfo(`Start Add Movie`);
     const addedMovieData = SetAddedMovieData({
       Title,
       Director,
@@ -75,14 +73,13 @@ exports.addMovie = async (req, res) => {
     });
 
     const addedMovie = await AddMovie(addedMovieData);
-    logger.info('--------- End Add Movie Successfully -----------');
+    LogInfo(`End Add Movie Successfully`);
 
     return res
       .status(201)
       .json(ResponseSchema('Movie Added Successfully', true, addedMovie));
   } catch (err) {
-    console.log(err);
-    logger.error(`---------- Error On Add Movie Due To: ${err} -------------`);
+    LogError(`Error On Add Movie Due To: ${err}`);
     return res
       .status(400)
       .json(
@@ -108,7 +105,7 @@ exports.updateMovie = async (req, res) => {
   } = req.body;
   const { id } = req.params;
   try {
-    logger.info('--------- Start Update Movie -----------');
+    LogInfo(`Start Update Movie`);
     if (!CheckValidIdObject(req, res, id, 'Movie Id is Invalid')) return;
     const movie = await CheckMovieExist(id);
     if (!movie.status) {
@@ -128,16 +125,14 @@ exports.updateMovie = async (req, res) => {
     const updatedMovieData = SetAddedMovieData(movieData, newAddedFieldsKeys);
 
     const updatedMovie = await UpdateMovie(id, updatedMovieData);
-    logger.info('--------- End Update Movie Successfully -----------');
+    LogInfo(`End Update Movie Successfully`);
 
-    res
+    return res
       .status(201)
       .json(ResponseSchema('Movie Updated Successfully', true, updatedMovie));
-    return;
   } catch (err) {
-    console.log(err);
-    logger.error(`---------- Error On Update Movie To: ${err} -------------`);
-    res
+    LogError(`Error On Update Movie To: ${err}`);
+    return res
       .status(400)
       .json(
         ResponseSchema(
@@ -152,20 +147,16 @@ exports.updateMovie = async (req, res) => {
 exports.getMovieById = async (req, res) => {
   try {
     const { id } = req.params;
-    logger.info(`------------------ Movie with ID ${id} -----------------`);
+    LogInfo(`Movie with ID ${id}`);
 
     if (!CheckValidIdObject(req, res, id, 'Movie Id is Invalid')) return;
     const movie = await CheckMovieExist(id);
     if (!movie.status) {
-      res.status(404).json(ResponseSchema(movie.message, false));
-      return;
+      return res.status(404).json(ResponseSchema(movie.message, false));
     }
     return res.status(200).json(ResponseSchema('Movie', true, movie?.data));
   } catch (err) {
-    console.log(err);
-    logger.error(
-      `---------- Error On Getting Movie By ID ${err} -------------`,
-    );
+    LogError(`Error On Getting Movie By ID ${err}`);
     return res
       .status(400)
       .json(
@@ -181,16 +172,11 @@ exports.getMovieById = async (req, res) => {
 exports.getAllMovies = async (req, res) => {
   try {
     const searchedQuery = SetMoviesSearchedQueryObject(req?.query);
-
-    logger.info('------------------ All Movies -----------------');
+    LogInfo(`All Movies`);
     const movies = await GetAllMovies(searchedQuery);
-
     return res.status(200).json(ResponseSchema('Movies', true, movies));
   } catch (err) {
-    console.log(err);
-    logger.error(
-      `---------- Error On Getting All Movies Due To: ${err} -------------`,
-    );
+    LogError(`Error On Getting All Movies Due To: ${err}`);
     return res
       .status(400)
       .json(
@@ -211,12 +197,10 @@ exports.getAllMoviesWithPagination = async (req, res) => {
     const count = await GetAllMoviesCount(searchedQuery);
     const pages = Math.ceil(count / itemPerPage);
 
-    logger.info(
-      '------------------ All Movies With Pagination -----------------',
-    );
+    LogInfo(`All Movies With Pagination`);
     const movies = await GetAllMoviesPaginated(
-      page,
-      itemPerPage,
+      Number(page),
+      Number(itemPerPage),
       searchedQuery,
     );
 
@@ -230,10 +214,7 @@ exports.getAllMoviesWithPagination = async (req, res) => {
         ),
       );
   } catch (err) {
-    console.log(err);
-    logger.error(
-      `---------- Error On Getting All Movies With Pagination Due To: ${err} -------------`,
-    );
+    LogError(`Error On Getting All Movies With Pagination Due To: ${err}`);
     return res
       .status(400)
       .json(
@@ -250,26 +231,22 @@ exports.deleteMovie = async (req, res) => {
   try {
     const { id } = req.params;
 
-    logger.info('------------------ Start Movie Deleteing -----------------');
+    LogInfo(`Start Movie Deleteing`);
     if (!CheckValidIdObject(req, res, id, 'Movie Id is Invalid')) return;
     const movie = await GetMovieById(id);
     if (!movie) {
-      logger.error('---------- Movie Id is wrong -------------');
-      res.status(400).json(ResponseSchema('Movie Id is wrong', false));
-      return;
+      LogError(`Movie Id is wrong`);
+      return res.status(400).json(ResponseSchema('Movie Id is wrong', false));
     }
     await DeleteMovie(id);
-    logger.info(
-      '------------------ Movie Deleted Successfully -----------------',
-    );
-    res.status(201).json(ResponseSchema('Movie Deleted Successfully', true));
-    return;
+    LogInfo(`Movie Deleted Successfully`);
+
+    return res
+      .status(201)
+      .json(ResponseSchema('Movie Deleted Successfully', true));
   } catch (err) {
-    console.log(err);
-    logger.error(
-      `---------- Error On Deleteing Movie Due To: ${err} -------------`,
-    );
-    res
+    LogError(`Error On Deleteing Movie Due To: ${err}`);
+    return res
       .status(400)
       .json(
         ResponseSchema(

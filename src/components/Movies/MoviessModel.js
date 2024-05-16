@@ -35,6 +35,16 @@ const MoviesSchema = mongoose.Schema(
         },
       },
     ],
+    tmdb_additional_info: [
+      {
+        info_type: {
+          type: String,
+        },
+        info_value: {
+          type: String,
+        },
+      },
+    ],
   },
   {
     timestamps: {

@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const { logger } = require('./logger');
+const { LogInfo, LogError } = require('@src/helper/HelperFunctions');
 
 const DBConfig = () =>
   mongoose
@@ -11,11 +11,11 @@ const DBConfig = () =>
       socketTimeoutMS: 45000,
     })
     .then((db) => {
-      logger.info('Connected to MongoDB...');
+      LogInfo('Connected to MongoDB...');
       return db;
     })
     .catch((err) => {
-      logger.error(
+      LogError(
         `Could not connect to MongoDB, exiting the application Due to: ${err}`,
       );
       process.exit();

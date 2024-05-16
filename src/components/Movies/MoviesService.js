@@ -1,13 +1,24 @@
 const XLSX = require('xlsx');
-const { logger } = require('../../config/logger');
-const { ResponseSchema } = require('../../helper/HelperFunctions');
+const { default: axios } = require('axios');
+const { logger } = require('@src/config/logger');
+const {
+  ResponseSchema,
+  LogError,
+  LogInfo,
+} = require('@src/helper/HelperFunctions');
 const { Movies } = require('./MoviessModel');
+const {
+  removeFromCache,
+  setInCache,
+  getFromCache,
+} = require('@src/helper/Cache');
+const { MOVIES_CACHE } = require('@src/helper/Keys');
 
 exports.GetMoviesFromCSVFile = async (file) => {
   try {
-    logger.info('--------- Start Get Movies From CSV File -----------');
+    LogInfo(`Start Get Movies From CSV File`);
     if (!file) {
-      logger.error('--------- File Is Required -----------');
+      LogError(`File Is Required`);
       return ResponseSchema('File is required.', false);
     }
 
@@ -15,8 +26,8 @@ exports.GetMoviesFromCSVFile = async (file) => {
     const allowed = ['xls', 'xlsx', 'csv'];
 
     if (allowed.indexOf(extension) === -1) {
-      logger.error(
-        '--------- File type is not supported. file type must be .xlsx or .xls or .csv -----------',
+      LogError(
+        `File type is not supported. file type must be .xlsx or .xls or .csv`,
       );
       return ResponseSchema(
         'File type is not supported. file type must be .xlsx or .xls or .csv',
@@ -36,21 +47,17 @@ exports.GetMoviesFromCSVFile = async (file) => {
         };
       })
       .filter((movie) => movie);
-    logger.info(
-      '--------- Finish Get Movies From CSV File Successfully -----------',
-    );
+    LogInfo(`Finish Get Movies From CSV File Successfully`);
     return ResponseSchema('Added Data', true, moviesData);
   } catch (err) {
-    logger.error(
-      `--------- Error While Getting Movies From CSV File ${err?.message} -----------`,
-    );
+    LogError(`Error While Getting Movies From CSV File ${err?.message}`);
     throw ResponseSchema(err?.message, true, err);
   }
 };
 
 exports.SetAddedMovieData = (movie, newAddedFieldsKeys = []) => {
   try {
-    logger.info('--------- Start Setting Added Movie Data -----------');
+    LogInfo(`Start Setting Added Movie Data`);
 
     const additionalInfo = newAddedFieldsKeys
       ?.map((newKey) => {
@@ -64,9 +71,7 @@ exports.SetAddedMovieData = (movie, newAddedFieldsKeys = []) => {
       })
       ?.filter((info) => info);
 
-    logger.info(
-      '--------- Finish Setting Added Movie Data Successfully -----------',
-    );
+    LogInfo(`Finish Setting Added Movie Data Successfully`);
     return {
       title: movie?.Title,
       director: movie?.Director,
@@ -80,7 +85,7 @@ exports.SetAddedMovieData = (movie, newAddedFieldsKeys = []) => {
         : movie?.newAddedFieldsKeys,
     };
   } catch (err) {
-    logger.error(`--------- Error While Setting Movie Data ${err} -----------`);
+    LogError(`Error While Setting Movie Data ${err}`);
     throw err;
   }
 };
@@ -89,8 +94,8 @@ exports.AddMoviesFromFile = async (file, newAddedFieldsKeys = []) => {
   try {
     const moviesData = await this.GetMoviesFromCSVFile(file);
     if (!moviesData?.status) {
-      logger.info(
-        `--------- Error While Getting Movies From CSV Due To ${moviesData?.message} -----------`,
+      LogInfo(
+        `Error While Getting Movies From CSV Due To ${moviesData?.message}`,
       );
       return moviesData;
     }
@@ -103,7 +108,7 @@ exports.AddMoviesFromFile = async (file, newAddedFieldsKeys = []) => {
 
     return ResponseSchema('Add Movies Successfully', true, syncedData);
   } catch (err) {
-    logger.error(`--------- Error While Setting Movie Data ${err} -----------`);
+    LogError(`Error While Setting Movie Data ${err}`);
     throw err;
   }
 };
@@ -136,12 +141,13 @@ exports.SyncMoviesWithDB = async (movies) => {
       ? await this.AddMovies(moviesToAdd)
       : [];
 
+    this.RemoveMovieCache();
     return ResponseSchema('Add Movies Successfully', true, {
       addedMovies,
       updatedMovies,
     });
   } catch (err) {
-    logger.error(`--------- Error While Setting Movie Data ${err} -----------`);
+    LogError(`Error While Setting Movie Data ${err}`);
     throw err;
   }
 };
@@ -182,102 +188,157 @@ exports.IsMovieNeedSync = (addedMovie, existingMovie) => {
       }
     }
   } catch (err) {
-    logger.error(
-      `--------- Error While Is Movie Need Sync Checking Due To ${err} -----------`,
-    );
+    LogError(`Error While Is Movie Need Sync Checking Due To ${err}`);
     throw err;
   }
 };
 
 exports.AddMovies = async (data) => {
   try {
-    logger.info('--------- Start Add Movies -----------');
+    LogInfo(`Start Add Movies`);
     const addedMovies = await Movies.create(data);
-    logger.info('--------- Finish Add Movies Successfully -----------');
+    LogInfo(`Finish Add Movies Successfully`);
+
+    this.RemoveMovieCache();
+
     return addedMovies;
   } catch (err) {
-    logger.error(
-      `--------- Error While Adding Movies Due To ${err} -----------`,
-    );
+    LogError(`Error While Adding Movies Due To ${err}`);
     throw err;
   }
 };
 
 exports.AddMovie = async (data) => {
   try {
-    logger.info('--------- Start Add Movie -----------');
+    LogInfo(`Start Add Movie`);
     const addedMovie = await Movies.create(data);
-    logger.info('--------- Finish Add Movie Successfully -----------');
+    LogInfo(`Finish Add Movie Successfully`);
+
+    this.RemoveMovieCache();
+
     return addedMovie;
   } catch (err) {
-    logger.error(
-      `--------- Error While Adding Movie Due To ${err} -----------`,
-    );
+    LogError(`Error While Adding Movie Due To ${err}`);
+    throw err;
+  }
+};
+
+exports.GetAllMoviesForCache = async () => {
+  try {
+    LogInfo(`Get All Movies For Cache`);
+    const movies = await Movies.find();
+    LogInfo(`Get All Movies For Cache Successfully`);
+
+    this.SetMovieCache(movies);
+
+    return movies;
+  } catch (err) {
+    LogError(`Error While Getting All Movies For Cache Due To ${err}`);
     throw err;
   }
 };
 
 exports.GetAllMovies = async (query = {}) => {
   try {
-    logger.info('--------- Get All Movies -----------');
-    const movies = await Movies.find(query);
-    logger.info('--------- Get All Movies Successfully -----------');
-    return movies;
+    const cachedMovies = this.GetMovieCache(query);
+    if (cachedMovies) {
+      return cachedMovies;
+    }
+
+    const movies = await this.GetAllMoviesForCache();
+    LogInfo(`Get All Movies`);
+    const filteredMovies = this.ApplyFilter(movies, query);
+    LogInfo(`Get All Movies Successfully`);
+
+    return filteredMovies;
   } catch (err) {
-    logger.error(
-      `--------- Error While Getting All Movies Due To ${err} -----------`,
-    );
+    LogError(`Error While Getting All Movies Due To ${err}`);
     throw err;
   }
 };
 
 exports.GetAllMoviesPaginated = async (
-  page,
-  itemPerPage,
+  page = 0,
+  itemPerPage = 10,
   searchedQuery = {},
 ) => {
   try {
-    logger.info('--------- Get All Movies With Pagination -----------');
-    const movies = await Movies.find(searchedQuery)
-      .sort({ _id: -1 })
-      .skip(page * itemPerPage)
-      .limit(itemPerPage);
-    logger.info(
-      '--------- Get All Movies With Pagination Successfully -----------',
+    let cachedMovies = this.GetMovieCache(searchedQuery);
+    if (cachedMovies) {
+      cachedMovies = cachedMovies.slice(
+        page * itemPerPage,
+        (page + 1) * itemPerPage,
+      );
+      return cachedMovies;
+    }
+
+    const movies = await this.GetAllMoviesForCache();
+    LogInfo(`Get All Movies With Pagination`);
+    let filteredMovies = this.ApplyFilter(movies, searchedQuery);
+
+    filteredMovies = filteredMovies.slice(
+      page * itemPerPage,
+      (page + 1) * itemPerPage,
     );
-    return movies;
+
+    LogInfo(`Get All Movies With Pagination Successfully`);
+    return filteredMovies;
   } catch (err) {
-    logger.error(
-      `--------- Error While Getting All Movies With Pagination Due To ${err} -----------`,
-    );
+    LogError(`Error While Getting All Movies With Pagination Due To ${err}`);
     throw err;
   }
 };
 
 exports.GetAllMoviesCount = async (query = {}) => {
   try {
-    logger.info('--------- Get All Movies Count -----------');
-    const moviesCount = await Movies.find(query).count();
-    logger.info('--------- Get All Movies Count Successfully -----------');
-    return moviesCount;
+    const cachedMovies = this.GetMovieCache(query);
+    if (cachedMovies) {
+      return cachedMovies?.length;
+    }
+
+    LogInfo(`Get All Movies Count`);
+    const movies = await this.GetAllMoviesForCache();
+    const moviesCount = this.ApplyFilter(movies, query);
+    LogInfo(`Get All Movies Count Successfully`);
+    return moviesCount?.length;
   } catch (err) {
-    logger.error(
-      `--------- Error While Getting All Movies Count Due To ${err} -----------`,
-    );
+    LogError(`Error While Getting All Movies Count Due To ${err}`);
     throw err;
   }
 };
 
 exports.GetMovieById = async (id) => {
   try {
-    logger.info('--------- Get Movie By Id -----------');
+    const cachedMovies = this.GetMovieCache();
+    if (cachedMovies) {
+      return cachedMovies?.find((movie) => movie?._id === id);
+    }
+
+    LogInfo(`Get Movie By Id`);
     const movie = await Movies.findById(id);
-    logger.info('--------- Get Movie By Id Successfully -----------');
+    LogInfo(`Get Movie By Id Successfully`);
     return movie;
   } catch (err) {
-    logger.error(
-      `--------- Error While Getting Movie By Id Due To ${err} -----------`,
+    LogError(`Error While Getting Movie By Id Due To ${err}`);
+    throw err;
+  }
+};
+
+exports.GetMovieDetailsFromTMDB = async (name, year) => {
+  try {
+    LogInfo(`Get Movie From TMDB`);
+    const movie = await axios.get(
+      `${process.env.TMPD_API_URL}/search/movie?query=${name}&year=${year}`,
+      {
+        headers: {
+          Authorization: `Bearer ${process.env.TMPD_API_TOKEN}`,
+        },
+      },
     );
+    LogInfo(`Get Movie From TMDB Successfully`);
+    return movie?.data?.results?.[0];
+  } catch (err) {
+    LogError(`Error While Getting Movie From TMDB Due To ${err}`);
     throw err;
   }
 };
@@ -286,19 +347,40 @@ exports.CheckMovieExist = async (id) => {
   try {
     const movie = await this.GetMovieById(id);
     if (!movie) {
-      logger.error('---------- Movie Id is wrong -------------');
+      LogError(`Movie Id is wrong`);
       return ResponseSchema('Movie Id is wrong', false);
     }
     return ResponseSchema('Movie', true, movie);
   } catch (err) {
-    logger.error(
-      `--------- Error While Checking Movie By Id Due To ${err} -----------`,
-    );
+    LogError(`Error While Checking Movie By Id Due To ${err}`);
     throw err;
   }
 };
 
 exports.SetMoviesSearchedQueryObject = (query = {}) => {
+  try {
+    const { title, genre } = query;
+    let searchedQuery = {};
+    if (title) {
+      searchedQuery = {
+        ...searchedQuery,
+        title: title,
+      };
+    }
+    if (genre) {
+      searchedQuery = {
+        ...searchedQuery,
+        genre: genre,
+      };
+    }
+    return searchedQuery;
+  } catch (err) {
+    LogError(`Error While Setting Movies Searched Query Object Due To ${err}`);
+    throw err;
+  }
+};
+
+exports.SetMoviesSearchedQueryDBObject = (query = {}) => {
   try {
     const { title, genre } = query;
     let searchedQuery = {};
@@ -316,8 +398,8 @@ exports.SetMoviesSearchedQueryObject = (query = {}) => {
     }
     return searchedQuery;
   } catch (err) {
-    logger.error(
-      `--------- Error While Setting Movies Searched Query Object Due To ${err} -----------`,
+    LogError(
+      `Error While Setting Movies Searched Query DB Object Due To ${err}`,
     );
     throw err;
   }
@@ -325,28 +407,105 @@ exports.SetMoviesSearchedQueryObject = (query = {}) => {
 
 exports.DeleteMovie = async (id) => {
   try {
-    logger.info('--------- Delete Movie By Id -----------');
+    LogInfo(`Delete Movie By Id`);
     const movie = await Movies.findByIdAndDelete(id);
-    logger.info('--------- Delete Movie By Id Successfully -----------');
+    LogInfo(`Delete Movie By Id Successfully`);
+
+    this.RemoveMovieCache();
+
     return movie;
   } catch (err) {
-    logger.error(
-      `--------- Error While Deleteing Movie By Id Due To ${err} -----------`,
-    );
+    LogError(`Error While Deleteing Movie By Id Due To ${err}`);
     throw err;
   }
 };
 
 exports.UpdateMovie = async (id, data) => {
   try {
-    logger.info('--------- Update Movie By Id -----------');
+    LogInfo(`Update Movie By Id`);
     const movie = await Movies.findByIdAndUpdate(id, data);
-    logger.info('--------- Update Movie By Id Successfully -----------');
+    LogInfo(`Update Movie By Id Successfully`);
+
+    this.RemoveMovieCache();
+
     return movie;
   } catch (err) {
-    logger.error(
-      `--------- Error While Updating Movie By Id Due To ${err} -----------`,
-    );
+    LogError(`Error While Updating Movie By Id Due To ${err}`);
     throw err;
   }
+};
+
+exports.SyncMovieDetailsWithTMDB = async (id) => {
+  try {
+    LogInfo(`Sync Movie Details With TMBD`);
+    const movie = await Movies.findById(id);
+    if (movie?.tmdb_additional_info?.length) return;
+
+    const movieDetailsTMBD = await this.GetMovieDetailsFromTMDB(
+      movie?.title,
+      movie?.year,
+    );
+    const usedKeys = [
+      'adult',
+      'backdrop_path',
+      'id',
+      'original_language',
+      'original_title',
+      'overview',
+      'popularity',
+      'video',
+      'vote_average',
+      'vote_count',
+    ];
+
+    const tmdbAdditionalInfo = usedKeys?.map((key) => {
+      return {
+        info_type: key,
+        info_value: movieDetailsTMBD[key],
+      };
+    });
+    const updatedMovieData = {
+      tmdb_additional_info: tmdbAdditionalInfo,
+    };
+
+    await this.UpdateMovie(id, updatedMovieData);
+
+    LogInfo(`Sync Movie Details With TMBD Successfully`);
+    return movie;
+  } catch (err) {
+    LogError(`Error While Syncing Movie Details With TMBD  Due To ${err}`);
+    throw err;
+  }
+};
+
+exports.ApplyFilter = (movies, searchedQuery = {}) => {
+  const filteredMovies = movies?.filter((movie) => {
+    return Object.keys(searchedQuery).every((key) => {
+      return (
+        movie[key] && movie[key].match(new RegExp(searchedQuery[key], 'i'))
+      );
+    });
+  });
+
+  return filteredMovies;
+};
+
+exports.GetMovieCache = (searchedQuery = {}) => {
+  const moviesFromCache = getFromCache(MOVIES_CACHE);
+  if (Object.keys(searchedQuery).length === 0) {
+    return moviesFromCache;
+  }
+  const filteredMovies = this.ApplyFilter(moviesFromCache, searchedQuery);
+  return filteredMovies;
+};
+
+exports.SetMovieCache = (movies) => {
+  setInCache(MOVIES_CACHE, movies);
+};
+
+exports.RemoveMovieCache = () => {
+  removeFromCache(MOVIES_CACHE);
+  setTimeout(async () => {
+    await this.GetAllMoviesForCache();
+  }, 0);
 };
