@@ -23,7 +23,7 @@ exports.AddUser = async (data) => {
 exports.UpdateUser = async (id, data) => {
   try {
     LogInfo(`Update User By Id`);
-    const user = await Users.findByIdAndUpdate(id, data);
+    const user = await Users.findByIdAndUpdate(id, data, { new: true });
     LogInfo(`Update User By Id Successfully`);
     return user;
   } catch (err) {

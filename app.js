@@ -14,7 +14,6 @@ const authJwt = require('@src/middleware/auth');
 const { LogInfo } = require('@src/helper/HelperFunctions');
 
 const app = express();
-
 // Connect to the database
 DBConfig();
 
@@ -45,6 +44,11 @@ app.use(errorHandlers.globalErrorHandler);
 
 // Start the server
 const PORT = process.env.PORT || 8080;
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
   LogInfo(`Server running at http://localhost:${PORT}`);
 });
+
+module.exports = {
+  server,
+  app,
+};

@@ -109,8 +109,7 @@ exports.updateMovie = async (req, res) => {
     if (!CheckValidIdObject(req, res, id, 'Movie Id is Invalid')) return;
     const movie = await CheckMovieExist(id);
     if (!movie.status) {
-      res.status(404).json(ResponseSchema(movie.message, false));
-      return;
+      return res.status(404).json(ResponseSchema(movie.message, false));
     }
     const movieData = {
       Title,
@@ -128,7 +127,7 @@ exports.updateMovie = async (req, res) => {
     LogInfo(`End Update Movie Successfully`);
 
     return res
-      .status(201)
+      .status(200)
       .json(ResponseSchema('Movie Updated Successfully', true, updatedMovie));
   } catch (err) {
     LogError(`Error On Update Movie To: ${err}`);
@@ -242,7 +241,7 @@ exports.deleteMovie = async (req, res) => {
     LogInfo(`Movie Deleted Successfully`);
 
     return res
-      .status(201)
+      .status(200)
       .json(ResponseSchema('Movie Deleted Successfully', true));
   } catch (err) {
     LogError(`Error On Deleteing Movie Due To: ${err}`);
