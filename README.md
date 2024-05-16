@@ -31,6 +31,10 @@ Before you begin, ensure you have met the following requirements:
 - `npm run seed`: Seed data into the database.
 - `npm run lint:fix`: Fix linting errors automatically.
 
+## API Documentation
+
+- Postman Collection Url : https://documenter.getpostman.com/view/23899137/2sA3JRYyV8
+
 ## Project Structure
 
 ```shell
