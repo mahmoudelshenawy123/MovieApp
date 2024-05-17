@@ -1,4 +1,4 @@
-const { errorHandler } = require('@src/helper/ErrorHandler');
+const { ErrorHandler } = require('@src/helper/ErrorHandler');
 const {
   ResponseSchema,
   PaginateSchema,
@@ -42,7 +42,7 @@ exports.addMoviesFromFile = async (req, res) => {
         ResponseSchema(
           `Somethings Went wrong Due To :${err.message}`,
           false,
-          errorHandler(err),
+          ErrorHandler(err),
         ),
       );
   }
@@ -86,7 +86,7 @@ exports.addMovie = async (req, res) => {
         ResponseSchema(
           `Somethings Went wrong Due To :${err.message}`,
           false,
-          errorHandler(err),
+          ErrorHandler(err),
         ),
       );
   }
@@ -109,8 +109,7 @@ exports.updateMovie = async (req, res) => {
     if (!CheckValidIdObject(req, res, id, 'Movie Id is Invalid')) return;
     const movie = await CheckMovieExist(id);
     if (!movie.status) {
-      res.status(404).json(ResponseSchema(movie.message, false));
-      return;
+      return res.status(404).json(ResponseSchema(movie.message, false));
     }
     const movieData = {
       Title,
@@ -122,13 +121,13 @@ exports.updateMovie = async (req, res) => {
       Colour,
       newAddedFieldsKeys,
     };
-    const updatedMovieData = SetAddedMovieData(movieData, newAddedFieldsKeys);
+    const updatedMovieData = SetAddedMovieData(movieData);
 
     const updatedMovie = await UpdateMovie(id, updatedMovieData);
     LogInfo(`End Update Movie Successfully`);
 
     return res
-      .status(201)
+      .status(200)
       .json(ResponseSchema('Movie Updated Successfully', true, updatedMovie));
   } catch (err) {
     LogError(`Error On Update Movie To: ${err}`);
@@ -138,7 +137,7 @@ exports.updateMovie = async (req, res) => {
         ResponseSchema(
           `Somethings Went wrong Due To :${err.message}`,
           false,
-          errorHandler(err),
+          ErrorHandler(err),
         ),
       );
   }
@@ -163,7 +162,7 @@ exports.getMovieById = async (req, res) => {
         ResponseSchema(
           `Something went wrong: ${err.message}`,
           false,
-          errorHandler(err),
+          ErrorHandler(err),
         ),
       );
   }
@@ -183,7 +182,7 @@ exports.getAllMovies = async (req, res) => {
         ResponseSchema(
           `Somethings Went wrong Due To :${err.message}`,
           false,
-          errorHandler(err),
+          ErrorHandler(err),
         ),
       );
   }
@@ -221,7 +220,7 @@ exports.getAllMoviesWithPagination = async (req, res) => {
         ResponseSchema(
           `Somethings Went wrong Due To :${err.message}`,
           false,
-          errorHandler(err),
+          ErrorHandler(err),
         ),
       );
   }
@@ -242,7 +241,7 @@ exports.deleteMovie = async (req, res) => {
     LogInfo(`Movie Deleted Successfully`);
 
     return res
-      .status(201)
+      .status(200)
       .json(ResponseSchema('Movie Deleted Successfully', true));
   } catch (err) {
     LogError(`Error On Deleteing Movie Due To: ${err}`);
@@ -252,7 +251,7 @@ exports.deleteMovie = async (req, res) => {
         ResponseSchema(
           `Somethings Went wrong Due To :${err.message}`,
           false,
-          errorHandler(err),
+          ErrorHandler(err),
         ),
       );
   }

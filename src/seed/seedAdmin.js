@@ -2,37 +2,16 @@ require('dotenv').config({ path: `.env.${process.env.NODE_ENV}` });
 require('../config/ModuleAliases');
 
 const bcrypt = require('bcrypt');
-const fs = require('fs');
-const path = require('path');
-const { AddMoviesFromFile } = require('@src/components/Movies/MoviesService');
 const DBConfig = require('@src/config/DBConfig');
 const { AdminUsers } = require('@src/components/AdminUsers/AdminUsersModel');
 const { LogInfo, LogError, LogWarn } = require('@src/helper/HelperFunctions');
-
-const MovieSeedFileName = 'defaultMovies.csv';
-const moviesSeedingFilePath = path.join(
-  __dirname,
-  '../documents',
-  MovieSeedFileName,
-);
+const {
+  DEFAULT_ADMIN_EMAIL,
+  DEFAULT_ADMIN_NAME,
+  DEFAULT_ADMIN_PASSWORD,
+} = require('@src/constants/Keys');
 
 DBConfig();
-
-const addMoviesFromSeed = async () => {
-  try {
-    LogInfo(`MOVIES SEEDING STARTED`);
-    const moviesSeedingFileBuffer = fs.readFileSync(moviesSeedingFilePath);
-    const fileDetails = {
-      buffer: moviesSeedingFileBuffer,
-      originalname: MovieSeedFileName,
-    };
-    await AddMoviesFromFile(fileDetails, []);
-    LogInfo(`MOVIES SEEDING FINISHED SUCCESSFULLY`);
-  } catch (error) {
-    LogError(`ERROR IN MOVIES SEEDING: ${error.message}`);
-    throw error;
-  }
-};
 
 const addAdminUser = async () => {
   try {
@@ -40,9 +19,9 @@ const addAdminUser = async () => {
 
     if (!adminUserCheck) {
       await AdminUsers.create({
-        email: 'admin@admin.com',
-        name: 'Initial Admin',
-        password: bcrypt.hashSync('123456', bcrypt.genSaltSync()),
+        email: DEFAULT_ADMIN_EMAIL,
+        name: DEFAULT_ADMIN_NAME,
+        password: bcrypt.hashSync(DEFAULT_ADMIN_PASSWORD, bcrypt.genSaltSync()),
       });
       LogInfo(`ADMIN USER ADDED`);
     } else {
@@ -58,11 +37,7 @@ const runSeeder = async () => {
   try {
     LogInfo(`ADMIN SEEDING STARTED`);
     await addAdminUser();
-
-    LogInfo(`MOVIES SEEDING STARTED`);
-    await addMoviesFromSeed();
-
-    LogInfo(`MOVIES SEEDING DONE`);
+    LogInfo(`ADMIN SEEDING DONE`);
   } catch (error) {
     LogError(`'ERROR IN SEEDING:', error.message`);
   } finally {

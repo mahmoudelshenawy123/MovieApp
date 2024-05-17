@@ -16,6 +16,7 @@ Before you begin, ensure you have met the following requirements:
 1. Clone the repository.
 2. Navigate to the project directory.
 3. Install dependencies using `npm install`.
+4. If this is your first time using the app, run `npm run seed:admin` to create the default admin user (its info in src/constants/Keys.js).
 
 ## Usage
 
@@ -27,8 +28,11 @@ Before you begin, ensure you have met the following requirements:
 
 - `npm run start:dev`: Start the server in development mode using nodemon.
 - `npm run start:staging`: Start the server in staging mode using nodemon.
+- `npm run test`: Runs tests using Jest. This command also forces Jest to exit after all tests are completed and detects any open handles.
+- `npm run test:coverage`: Runs tests using Jest and generates coverage for the tests. This command also forces Jest to exit after all tests are completed and detects any open handles.
 - `npm run lint`: Lint source files using ESLint.
-- `npm run seed`: Seed data into the database.
+- `npm run seed:movies`: Seed movies data into the database.
+- `npm run seed:admin`: Seed default admin data into the database.
 - `npm run lint:fix`: Fix linting errors automatically.
 
 ## API Documentation
@@ -44,6 +48,7 @@ Before you begin, ensure you have met the following requirements:
 ├── .env.docker
 ├── .env.staging
 ├── .eslintrc.json
+├── jest.config.js
 ├── .gitignore
 ├── .prettierrc.json
 ├── app.js
@@ -55,32 +60,36 @@ Before you begin, ensure you have met the following requirements:
 └── src
 ├── components
 │ ├── AdminUsers
+│ │ ├── AdminUserController.test.js
 │ │ ├── AdminUsersController.js
 │ │ ├── AdminUsersModel.js
 │ │ ├── AdminUsersRoutes.js
 │ │ └── AdminUsersService.js
 │ ├── Movies
+│ │ ├── MoviesController.test.js
 │ │ ├── MoviesController.js
 │ │ ├── MoviesModel.js
 │ │ ├── MoviesRoutes.js
 │ │ └── MoviesService.js
 │ └── Users
+│ ├── UsersController.test.js
 │ ├── UsersController.js
 │ ├── UsersModel.js
 │ ├── UsersRoutes.js
 │ └── UsersService.js
 ├── config
 │ ├── DBConfig.js
-│ ├── logger.js
+│ ├── Logger.js
 │ ├── ModuleAliases.js
 │ └── Routes.js
 ├── documents
-│ └── 1000GreatestFilms.csv
+│ └── defaultMovies.csv
+├── constants
+│ └── Keys.js
 ├── helper
 │ ├── Cache.js
 │ ├── ErrorHandler.js
-│ ├── HelperFunctions.js
-│ └── Keys.js
+│ └── HelperFunctions.js
 ├── middleware
 │ ├── auth.js
 │ └── authMiddlewares.js
