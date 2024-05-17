@@ -1,5 +1,5 @@
 const bcrypt = require('bcrypt');
-const { errorHandler } = require('@src/helper/ErrorHandler');
+const { ErrorHandler } = require('@src/helper/ErrorHandler');
 const { LogInfo, LogError } = require('@src/helper/HelperFunctions');
 
 const {
@@ -24,7 +24,7 @@ const { SyncMovieDetailsWithTMDB } = require('../Movies/MoviesService');
 exports.addUser = async (req, res) => {
   try {
     const { name, email, password } = req.body;
-    LogInfo(`Start Add User`);
+    LogInfo('Start Add User');
     const addedUserData = {
       name,
       email,
@@ -32,7 +32,7 @@ exports.addUser = async (req, res) => {
     };
 
     const addedUser = await AddUser(addedUserData);
-    LogInfo(`End Add User Successfully`);
+    LogInfo('End Add User Successfully');
 
     return res
       .status(201)
@@ -45,7 +45,7 @@ exports.addUser = async (req, res) => {
         ResponseSchema(
           `Somethings Went wrong Due To :${err.message}`,
           false,
-          errorHandler(err),
+          ErrorHandler(err),
         ),
       );
   }
@@ -55,10 +55,25 @@ exports.updateUser = async (req, res) => {
   try {
     const { name, email, password } = req.body;
     const { id } = req.params;
-    LogInfo(`Start Update User`);
+    LogInfo('Start Update User');
     if (!CheckValidIdObject(req, res, id, 'User Id is Invalid')) return;
     const user = await CheckUserExist(id);
     if (!user.status) {
+      return res.status(404).json(ResponseSchema(user.message, false));
+    }
+    if (req?.authedUser?.user_type === 'user') {
+      if (req?.authedUser?.user_id !== id) {
+        return res
+          .status(400)
+          .json(
+            ResponseSchema(
+              "You don't Have Permission To Update Other Users",
+              false,
+            ),
+          );
+      }
+    }
+    if (!(user?.data?._id).equals(id)) {
       return res.status(404).json(ResponseSchema(user.message, false));
     }
     const updatedUserData = {
@@ -68,7 +83,7 @@ exports.updateUser = async (req, res) => {
     };
 
     const updatedUser = await UpdateUser(id, updatedUserData);
-    LogInfo(`End Update User Successfully`);
+    LogInfo('End Update User Successfully');
 
     return res
       .status(201)
@@ -81,7 +96,7 @@ exports.updateUser = async (req, res) => {
         ResponseSchema(
           `Somethings Went wrong Due To :${err.message}`,
           false,
-          errorHandler(err),
+          ErrorHandler(err),
         ),
       );
   }
@@ -97,6 +112,18 @@ exports.getUserById = async (req, res) => {
     if (!user.status) {
       return res.status(404).json(ResponseSchema(user.message, false));
     }
+    if (req?.authedUser?.user_type === 'user') {
+      if (req?.authedUser?.user_id !== id) {
+        return res
+          .status(404)
+          .json(
+            ResponseSchema(
+              "You don't Have Permission To Show Other Users Data",
+              false,
+            ),
+          );
+      }
+    }
     return res.status(200).json(ResponseSchema('User', true, user?.data));
   } catch (err) {
     LogError(`Error On Getting User By ID ${err}`);
@@ -106,7 +133,7 @@ exports.getUserById = async (req, res) => {
         ResponseSchema(
           `Something went wrong: ${err.message}`,
           false,
-          errorHandler(err),
+          ErrorHandler(err),
         ),
       );
   }
@@ -114,7 +141,7 @@ exports.getUserById = async (req, res) => {
 
 exports.getAllUsers = async (req, res) => {
   try {
-    LogInfo(`All Users`);
+    LogInfo('All Users');
     const users = await GetAllUsers({}, { password: 0 });
     return res.status(200).json(ResponseSchema('Users', true, users));
   } catch (err) {
@@ -125,7 +152,7 @@ exports.getAllUsers = async (req, res) => {
         ResponseSchema(
           `Somethings Went wrong Due To :${err.message}`,
           false,
-          errorHandler(err),
+          ErrorHandler(err),
         ),
       );
   }
@@ -138,7 +165,7 @@ exports.getAllUsersWithPagination = async (req, res) => {
     const count = await GetAllUsersCount();
     const pages = Math.ceil(count / itemPerPage);
 
-    LogInfo(`All Users With Pagination`);
+    LogInfo('All Users With Pagination');
     const users = await GetAllUsersPaginated(
       page,
       itemPerPage,
@@ -164,7 +191,7 @@ exports.getAllUsersWithPagination = async (req, res) => {
         ResponseSchema(
           `Somethings Went wrong Due To :${err.message}`,
           false,
-          errorHandler(err),
+          ErrorHandler(err),
         ),
       );
   }
@@ -177,7 +204,7 @@ exports.login = async (req, res) => {
     if (!loggedStatus.status) {
       return res.status(404).json(ResponseSchema(loggedStatus?.message, false));
     }
-    LogInfo(`User Logged Successfully`);
+    LogInfo('User Logged Successfully');
     return res.status(201).json(
       ResponseSchema('User Logged Successfully', true, {
         token: loggedStatus?.data,
@@ -191,7 +218,7 @@ exports.login = async (req, res) => {
         ResponseSchema(
           `Somethings Went wrong Due To :${err.message}`,
           false,
-          errorHandler(err),
+          ErrorHandler(err),
         ),
       );
   }
@@ -201,14 +228,14 @@ exports.deleteUser = async (req, res) => {
   try {
     const { id } = req.params;
 
-    LogInfo(`Start User Deleteing`);
+    LogInfo('Start User Deleteing');
     if (!CheckValidIdObject(req, res, id, 'User Id is Invalid')) return;
     const user = await CheckUserExist(id);
     if (!user.status) {
       return res.status(404).json(ResponseSchema(user.message, false));
     }
     await DeleteUser(id);
-    LogInfo(`User Deleted Successfully`);
+    LogInfo('User Deleted Successfully');
     return res
       .status(201)
       .json(ResponseSchema('User Deleted Successfully', true));
@@ -220,7 +247,7 @@ exports.deleteUser = async (req, res) => {
         ResponseSchema(
           `Somethings Went wrong Due To :${err.message}`,
           false,
-          errorHandler(err),
+          ErrorHandler(err),
         ),
       );
   }
@@ -246,7 +273,7 @@ exports.toggleMovieInFavorite = async (req, res) => {
       };
       await UpdateUser(user_id, updatedData);
 
-      LogInfo(`Movie Removed From Favorites Successfully`);
+      LogInfo('Movie Removed From Favorites Successfully');
       return res
         .status(201)
         .json(
@@ -260,7 +287,7 @@ exports.toggleMovieInFavorite = async (req, res) => {
     };
     await UpdateUser(user_id, updatedData);
     await SyncMovieDetailsWithTMDB(favoriteMovieId);
-    LogInfo(`Movie Added To Favorites Successfully`);
+    LogInfo('Movie Added To Favorites Successfully');
     return res
       .status(201)
       .json(ResponseSchema('Movie Added To Favorites Successfully', true));
@@ -272,7 +299,7 @@ exports.toggleMovieInFavorite = async (req, res) => {
         ResponseSchema(
           `Somethings Went wrong Due To :${err.message}`,
           false,
-          errorHandler(err),
+          ErrorHandler(err),
         ),
       );
   }
@@ -325,7 +352,7 @@ exports.getAllUserFavoritedMoviesPaginated = async (req, res) => {
         ResponseSchema(
           `Somethings Went wrong Due To :${err.message}`,
           false,
-          errorHandler(err),
+          ErrorHandler(err),
         ),
       );
   }

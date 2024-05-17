@@ -1,6 +1,6 @@
 const { LogError } = require('@src/helper/HelperFunctions');
 
-const errorHandler = (error) => {
+const ErrorHandler = (error) => {
   let errorMessage = '';
   if (error.name === 'ValidationError') {
     const validationErrors = Object.values(error.errors).map(
@@ -14,7 +14,7 @@ const errorHandler = (error) => {
   return { error: errorMessage };
 };
 
-const mongooseErrorHandler = (err, req, res, next) => {
+const MongooseErrorHandler = (err, req, res, next) => {
   if (err.name === 'ValidationError') {
     const errors = Object.values(err.errors).map((error) => error.message);
     const message = `Validation Error: ${errors.join(', ')}`;
@@ -24,7 +24,7 @@ const mongooseErrorHandler = (err, req, res, next) => {
   next(err);
 };
 
-const authorizationErrorHandler = (err, req, res, next) => {
+const AuthorizationErrorHandler = (err, req, res, next) => {
   if (err.name === 'UnauthorizedError') {
     LogError(err.message);
     return res.status(401).json({ error: 'Unauthorized' });
@@ -32,17 +32,17 @@ const authorizationErrorHandler = (err, req, res, next) => {
   next(err);
 };
 
-const developmentErrorHandler = (err, req, res) => {
+const DevelopmentErrorHandler = (err, req, res) => {
   LogError(err.stack);
   res.status(err.status || 500).json({ error: err.message });
 };
 
-const productionErrorHandler = (err, req, res) => {
+const ProductionErrorHandler = (err, req, res) => {
   LogError(err.message);
   res.status(err.status || 500).json({ error: 'Internal Server Error' });
 };
 
-const notFoundErrorHandler = (req, res, next) => {
+const NotFoundErrorHandler = (req, res, next) => {
   const message = `Not Found - ${req.originalUrl}`;
   LogError(message);
   const error = new Error(`Not Found - ${req.originalUrl}`);
@@ -50,17 +50,17 @@ const notFoundErrorHandler = (req, res, next) => {
   next(error);
 };
 
-const globalErrorHandler = (err, req, res) => {
+const GlobalErrorHandler = (err, req, res) => {
   LogError(err.stack);
   res.status(500).json({ error: 'Internal Server Error' });
 };
 
 module.exports = {
-  errorHandler,
-  mongooseErrorHandler,
-  developmentErrorHandler,
-  productionErrorHandler,
-  notFoundErrorHandler,
-  authorizationErrorHandler,
-  globalErrorHandler,
+  ErrorHandler,
+  MongooseErrorHandler,
+  DevelopmentErrorHandler,
+  ProductionErrorHandler,
+  NotFoundErrorHandler,
+  AuthorizationErrorHandler,
+  GlobalErrorHandler,
 };

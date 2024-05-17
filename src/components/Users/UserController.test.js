@@ -13,16 +13,17 @@ describe('User Endpoints', () => {
   let userToken;
   let movieDetails;
   const addedUserData = {
-    name: 'Test User22',
-    email: 'testdas3411da2dadddasasdasdsa456s321122@exameqwple.com',
-    password: 'te3123dasdasddasasd12s12dstpaseqwsword2',
+    name: 'Test User',
+    email: 'testuser@testuser.com',
+    password: '12345testuser',
   };
   const updatedUserData = {
     name: 'Updated Test User',
-    email: 'updated3das12_dasdastdasdsaed44asdasdasadsst@example.com',
-    password: 'te3123das12sdas1dasdsa2ddasstpaseqwsword2',
+    email: 'updatedtestuser@updatedtestuser.com',
+    password: '12343updatedtestuser',
   };
   let userData;
+
   beforeAll(async () => {
     const loggedStatus = await LoginAdminUser(
       DEFAULT_ADMIN_EMAIL,
@@ -34,6 +35,11 @@ describe('User Endpoints', () => {
   afterAll(async () => {
     await server.close(); // Close the server after all tests are finished
     await mongoose.disconnect(); // Close the MongoDB connection
+  });
+
+  process.on('SIGINT', async () => {
+    await server.close();
+    process.exit(0);
   });
 
   // Test for adding a user

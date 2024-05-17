@@ -8,12 +8,20 @@ const compression = require('compression');
 const morgan = require('morgan');
 
 const DBConfig = require('@src/config/DBConfig');
-const errorHandlers = require('@src/helper/ErrorHandler');
+const {
+  MongooseErrorHandler,
+  AuthorizationErrorHandler,
+  DevelopmentErrorHandler,
+  ProductionErrorHandler,
+  NotFoundErrorHandler,
+  GlobalErrorHandler,
+} = require('@src/helper/ErrorHandler');
 const routes = require('@src/config/Routes');
-const authJwt = require('@src/middleware/auth');
+const authJwt = require('@src/middleware/Auth');
 const { LogInfo } = require('@src/helper/HelperFunctions');
 
 const app = express();
+
 // Connect to the database
 DBConfig();
 
@@ -30,17 +38,17 @@ app.use(authJwt());
 app.use('/', routes);
 
 // Error Handlers
-app.use(errorHandlers.mongooseErrorHandler);
-app.use(errorHandlers.authorizationErrorHandler);
+app.use(MongooseErrorHandler);
+app.use(AuthorizationErrorHandler);
 if (process.env.ENV === 'DEVELOPMENT') {
-  app.use(errorHandlers.developmentErrorHandler);
+  app.use(DevelopmentErrorHandler);
 } else {
-  app.use(errorHandlers.productionErrorHandler);
+  app.use(ProductionErrorHandler);
 }
-app.use(errorHandlers.notFoundErrorHandler);
+app.use(NotFoundErrorHandler);
 
 // Global Error Handler
-app.use(errorHandlers.globalErrorHandler);
+app.use(GlobalErrorHandler);
 
 // Start the server
 const PORT = process.env.PORT || 8080;

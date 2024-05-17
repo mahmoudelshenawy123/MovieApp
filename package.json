@@ -6,7 +6,8 @@
   "scripts": {
     "start:dev": "cross-env NODE_ENV=dev nodemon app.js",
     "start:staging": "cross-env NODE_ENV=staging nodemon app.js",
-    "test": "cross-env NODE_ENV=dev jest --config=jest.config.js --forceExit --detectOpenHandles",
+    "test": "cross-env NODE_ENV=dev jest --config=jest.config.js --forceExit --detectOpenHandles --maxWorkers=1",
+    "test:coverage": "cross-env NODE_ENV=dev jest --config=jest.config.js --forceExit --detectOpenHandles --coverage --maxWorkers=1",
     "lint": "eslint src/**",
     "seed:movies": "cross-env NODE_ENV=dev node ./src/seed",
     "seed:admin": "cross-env NODE_ENV=dev node ./src/seed/seedAdmin",

@@ -1,4 +1,4 @@
-const { errorHandler } = require('@src/helper/ErrorHandler');
+const { ErrorHandler } = require('@src/helper/ErrorHandler');
 const {
   ResponseSchema,
   PaginateSchema,
@@ -42,7 +42,7 @@ exports.addMoviesFromFile = async (req, res) => {
         ResponseSchema(
           `Somethings Went wrong Due To :${err.message}`,
           false,
-          errorHandler(err),
+          ErrorHandler(err),
         ),
       );
   }
@@ -86,7 +86,7 @@ exports.addMovie = async (req, res) => {
         ResponseSchema(
           `Somethings Went wrong Due To :${err.message}`,
           false,
-          errorHandler(err),
+          ErrorHandler(err),
         ),
       );
   }
@@ -121,7 +121,7 @@ exports.updateMovie = async (req, res) => {
       Colour,
       newAddedFieldsKeys,
     };
-    const updatedMovieData = SetAddedMovieData(movieData, newAddedFieldsKeys);
+    const updatedMovieData = SetAddedMovieData(movieData);
 
     const updatedMovie = await UpdateMovie(id, updatedMovieData);
     LogInfo(`End Update Movie Successfully`);
@@ -137,7 +137,7 @@ exports.updateMovie = async (req, res) => {
         ResponseSchema(
           `Somethings Went wrong Due To :${err.message}`,
           false,
-          errorHandler(err),
+          ErrorHandler(err),
         ),
       );
   }
@@ -162,7 +162,7 @@ exports.getMovieById = async (req, res) => {
         ResponseSchema(
           `Something went wrong: ${err.message}`,
           false,
-          errorHandler(err),
+          ErrorHandler(err),
         ),
       );
   }
@@ -182,7 +182,7 @@ exports.getAllMovies = async (req, res) => {
         ResponseSchema(
           `Somethings Went wrong Due To :${err.message}`,
           false,
-          errorHandler(err),
+          ErrorHandler(err),
         ),
       );
   }
@@ -220,7 +220,7 @@ exports.getAllMoviesWithPagination = async (req, res) => {
         ResponseSchema(
           `Somethings Went wrong Due To :${err.message}`,
           false,
-          errorHandler(err),
+          ErrorHandler(err),
         ),
       );
   }
@@ -251,7 +251,7 @@ exports.deleteMovie = async (req, res) => {
         ResponseSchema(
           `Somethings Went wrong Due To :${err.message}`,
           false,
-          errorHandler(err),
+          ErrorHandler(err),
         ),
       );
   }

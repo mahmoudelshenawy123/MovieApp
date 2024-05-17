@@ -10,16 +10,19 @@ const {
 describe('Admin User Endpoints', () => {
   let addedUserId;
   let authToken;
+
   const addedUserData = {
-    name: 'Test User22',
-    email: 'testdas34112daddsas321122@exameqwple.com',
-    password: 'te3123das12s12dstpaseqwsword2',
+    name: 'Test User',
+    email: 'test@test.com',
+    password: 'test124',
   };
+
   const updatedUserData = {
     name: 'Updated Test User',
-    email: 'updated3das12_tedasdasdasadsst@example.com',
-    password: 'te3123das12s12dstpaseqwsword2',
+    email: 'testnew@testnew.com',
+    password: 'test123456',
   };
+
   beforeAll(async () => {
     const loggedStatus = await LoginAdminUser(
       DEFAULT_ADMIN_EMAIL,
@@ -31,6 +34,11 @@ describe('Admin User Endpoints', () => {
   afterAll(async () => {
     await server.close(); // Close the server after all tests are finished
     await mongoose.disconnect(); // Close the MongoDB connection
+  });
+
+  process.on('SIGINT', async () => {
+    await server.close();
+    process.exit(0);
   });
 
   // Test for adding an admin user
@@ -147,7 +155,4 @@ describe('Admin User Endpoints', () => {
   });
 
   // Close MongoDB connection after all tests are finished
-  afterAll(async () => {
-    await mongoose.disconnect();
-  });
 });

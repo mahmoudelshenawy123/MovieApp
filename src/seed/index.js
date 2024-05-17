@@ -9,7 +9,7 @@ const DBConfig = require('@src/config/DBConfig');
 const { AdminUsers } = require('@src/components/AdminUsers/AdminUsersModel');
 const { LogInfo, LogError, LogWarn } = require('@src/helper/HelperFunctions');
 
-const MovieSeedFileName = '1000GreatestFilms.csv';
+const MovieSeedFileName = 'defaultMovies.csv';
 const moviesSeedingFilePath = path.join(
   __dirname,
   '../documents',

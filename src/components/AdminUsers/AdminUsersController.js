@@ -1,5 +1,5 @@
 const bcrypt = require('bcrypt');
-const { errorHandler } = require('@src/helper/ErrorHandler');
+const { ErrorHandler } = require('@src/helper/ErrorHandler');
 const {
   ResponseSchema,
   PaginateSchema,
@@ -41,7 +41,7 @@ exports.addAdminUser = async (req, res) => {
         ResponseSchema(
           `Somethings Went wrong Due To :${err.message}`,
           false,
-          errorHandler(err),
+          ErrorHandler(err),
         ),
       );
   }
@@ -79,7 +79,7 @@ exports.updateAdminUser = async (req, res) => {
         ResponseSchema(
           `Somethings Went wrong Due To :${err.message}`,
           false,
-          errorHandler(err),
+          ErrorHandler(err),
         ),
       );
   }
@@ -88,7 +88,6 @@ exports.updateAdminUser = async (req, res) => {
 exports.getAdminUserById = async (req, res) => {
   try {
     const { id } = req.params;
-
     LogInfo(`Admin User with ID ${id}`);
     if (!CheckValidIdObject(req, res, id, 'Admin User Id is Invalid')) return;
     const user = await CheckAdminUserExist(id, { password: 0 });
@@ -104,7 +103,7 @@ exports.getAdminUserById = async (req, res) => {
         ResponseSchema(
           `Something went wrong: ${err.message}`,
           false,
-          errorHandler(err),
+          ErrorHandler(err),
         ),
       );
   }
@@ -123,7 +122,7 @@ exports.getAllAdminUsers = async (req, res) => {
         ResponseSchema(
           `Somethings Went wrong Due To :${err.message}`,
           false,
-          errorHandler(err),
+          ErrorHandler(err),
         ),
       );
   }
@@ -137,7 +136,6 @@ exports.getAllAdminUsersWithPagination = async (req, res) => {
     const pages = Math.ceil(count / itemPerPage);
 
     LogInfo('All Admin Users With Pagination');
-
     const users = await GetAllAdminUsersPaginated(
       page,
       itemPerPage,
@@ -163,7 +161,7 @@ exports.getAllAdminUsersWithPagination = async (req, res) => {
         ResponseSchema(
           `Somethings Went wrong Due To :${err.message}`,
           false,
-          errorHandler(err),
+          ErrorHandler(err),
         ),
       );
   }
@@ -190,7 +188,7 @@ exports.login = async (req, res) => {
         ResponseSchema(
           `Somethings Went wrong Due To :${err.message}`,
           false,
-          errorHandler(err),
+          ErrorHandler(err),
         ),
       );
   }
@@ -199,7 +197,7 @@ exports.login = async (req, res) => {
 exports.deleteAdminUser = async (req, res) => {
   try {
     const { id } = req.params;
-    LogInfo(`Start Admin User Deleteing`);
+    LogInfo('Start Admin User Deleteing');
     if (!CheckValidIdObject(req, res, id, 'Admin User Id is Invalid')) return;
     const user = await CheckAdminUserExist(id);
     if (!user.status) {
@@ -211,7 +209,7 @@ exports.deleteAdminUser = async (req, res) => {
         .status(404)
         .json(ResponseSchema(deletedStatus?.message, false));
     }
-    LogInfo(`Admin User Deleted Successfully`);
+    LogInfo('Admin User Deleted Successfully');
     return res
       .status(201)
       .json(ResponseSchema('Admin User Deleted Successfully', true));
@@ -224,7 +222,7 @@ exports.deleteAdminUser = async (req, res) => {
         ResponseSchema(
           `Somethings Went wrong Due To :${err.message}`,
           false,
-          errorHandler(err),
+          ErrorHandler(err),
         ),
       );
   }

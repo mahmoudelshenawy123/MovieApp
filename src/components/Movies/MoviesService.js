@@ -1,12 +1,11 @@
 const XLSX = require('xlsx');
 const { default: axios } = require('axios');
-const { logger } = require('@src/config/logger');
 const {
   ResponseSchema,
   LogError,
   LogInfo,
 } = require('@src/helper/HelperFunctions');
-const { Movies } = require('./MoviessModel');
+const { Movies } = require('./MoviesModel');
 const {
   removeFromCache,
   setInCache,
@@ -16,9 +15,9 @@ const { MOVIES_CACHE } = require('@src/constants/Keys');
 
 exports.GetMoviesFromCSVFile = async (file) => {
   try {
-    LogInfo(`Start Get Movies From CSV File`);
+    LogInfo('Start Get Movies From CSV File');
     if (!file) {
-      LogError(`File Is Required`);
+      LogError('File Is Required');
       return ResponseSchema('File is required.', false);
     }
 
@@ -26,13 +25,10 @@ exports.GetMoviesFromCSVFile = async (file) => {
     const allowed = ['xls', 'xlsx', 'csv'];
 
     if (allowed.indexOf(extension) === -1) {
-      LogError(
-        `File type is not supported. file type must be .xlsx or .xls or .csv`,
-      );
-      return ResponseSchema(
-        'File type is not supported. file type must be .xlsx or .xls or .csv',
-        false,
-      );
+      const fileErrorMessage =
+        'File type is not supported. file type must be .xlsx or .xls or .csv';
+      LogError(fileErrorMessage);
+      return ResponseSchema(fileErrorMessage, false);
     }
 
     const data = await file.buffer;
@@ -47,7 +43,7 @@ exports.GetMoviesFromCSVFile = async (file) => {
         };
       })
       .filter((movie) => movie);
-    LogInfo(`Finish Get Movies From CSV File Successfully`);
+    LogInfo('Finish Get Movies From CSV File Successfully');
     return ResponseSchema('Added Data', true, moviesData);
   } catch (err) {
     LogError(`Error While Getting Movies From CSV File ${err?.message}`);
@@ -57,7 +53,7 @@ exports.GetMoviesFromCSVFile = async (file) => {
 
 exports.SetAddedMovieData = (movie, newAddedFieldsKeys = []) => {
   try {
-    LogInfo(`Start Setting Added Movie Data`);
+    LogInfo('Start Setting Added Movie Data');
 
     const additionalInfo = newAddedFieldsKeys
       ?.map((newKey) => {
@@ -71,7 +67,7 @@ exports.SetAddedMovieData = (movie, newAddedFieldsKeys = []) => {
       })
       ?.filter((info) => info);
 
-    LogInfo(`Finish Setting Added Movie Data Successfully`);
+    LogInfo('Finish Setting Added Movie Data Successfully');
     return {
       title: movie?.Title,
       director: movie?.Director,
@@ -195,9 +191,9 @@ exports.IsMovieNeedSync = (addedMovie, existingMovie) => {
 
 exports.AddMovies = async (data) => {
   try {
-    LogInfo(`Start Add Movies`);
+    LogInfo('Start Add Movies');
     const addedMovies = await Movies.create(data);
-    LogInfo(`Finish Add Movies Successfully`);
+    LogInfo('Finish Add Movies Successfully');
 
     this.RemoveMovieCache();
 
@@ -210,9 +206,9 @@ exports.AddMovies = async (data) => {
 
 exports.AddMovie = async (data) => {
   try {
-    LogInfo(`Start Add Movie`);
+    LogInfo('Start Add Movie');
     const addedMovie = await Movies.create(data);
-    LogInfo(`Finish Add Movie Successfully`);
+    LogInfo('Finish Add Movie Successfully');
 
     this.RemoveMovieCache();
 
@@ -225,9 +221,9 @@ exports.AddMovie = async (data) => {
 
 exports.GetAllMoviesForCache = async () => {
   try {
-    LogInfo(`Get All Movies For Cache`);
+    LogInfo('Get All Movies For Cache');
     const movies = await Movies.find();
-    LogInfo(`Get All Movies For Cache Successfully`);
+    LogInfo('Get All Movies For Cache Successfully');
 
     this.SetMovieCache(movies);
 
@@ -246,9 +242,9 @@ exports.GetAllMovies = async (query = {}) => {
     }
 
     const movies = await this.GetAllMoviesForCache();
-    LogInfo(`Get All Movies`);
+    LogInfo('Get All Movies');
     const filteredMovies = this.ApplyFilter(movies, query);
-    LogInfo(`Get All Movies Successfully`);
+    LogInfo('Get All Movies Successfully');
 
     return filteredMovies;
   } catch (err) {
@@ -273,7 +269,7 @@ exports.GetAllMoviesPaginated = async (
     }
 
     const movies = await this.GetAllMoviesForCache();
-    LogInfo(`Get All Movies With Pagination`);
+    LogInfo('Get All Movies With Pagination');
     let filteredMovies = this.ApplyFilter(movies, searchedQuery);
 
     filteredMovies = filteredMovies.slice(
@@ -281,7 +277,7 @@ exports.GetAllMoviesPaginated = async (
       (page + 1) * itemPerPage,
     );
 
-    LogInfo(`Get All Movies With Pagination Successfully`);
+    LogInfo('Get All Movies With Pagination Successfully');
     return filteredMovies;
   } catch (err) {
     LogError(`Error While Getting All Movies With Pagination Due To ${err}`);
@@ -296,10 +292,10 @@ exports.GetAllMoviesCount = async (query = {}) => {
       return cachedMovies?.length;
     }
 
-    LogInfo(`Get All Movies Count`);
+    LogInfo('Get All Movies Count');
     const movies = await this.GetAllMoviesForCache();
     const moviesCount = this.ApplyFilter(movies, query);
-    LogInfo(`Get All Movies Count Successfully`);
+    LogInfo('Get All Movies Count Successfully');
     return moviesCount?.length;
   } catch (err) {
     LogError(`Error While Getting All Movies Count Due To ${err}`);
@@ -314,9 +310,9 @@ exports.GetMovieById = async (id) => {
       return cachedMovies?.find((movie) => movie?._id === id);
     }
 
-    LogInfo(`Get Movie By Id`);
+    LogInfo('Get Movie By Id');
     const movie = await Movies.findById(id);
-    LogInfo(`Get Movie By Id Successfully`);
+    LogInfo('Get Movie By Id Successfully');
     return movie;
   } catch (err) {
     LogError(`Error While Getting Movie By Id Due To ${err}`);
@@ -326,9 +322,9 @@ exports.GetMovieById = async (id) => {
 
 exports.GetMovieForTest = async () => {
   try {
-    LogInfo(`Get Movie For Test`);
+    LogInfo('Get Movie For Test');
     const movie = await Movies.findOne({});
-    LogInfo(`Get Movie For Test Successfully`);
+    LogInfo('Get Movie For Test Successfully');
     return movie;
   } catch (err) {
     LogError(`Error While Getting Movie For Test Due To ${err}`);
@@ -338,7 +334,7 @@ exports.GetMovieForTest = async () => {
 
 exports.GetMovieDetailsFromTMDB = async (name, year) => {
   try {
-    LogInfo(`Get Movie From TMDB`);
+    LogInfo('Get Movie From TMDB');
     const movie = await axios.get(
       `${process.env.TMPD_API_URL}/search/movie?query=${name}&year=${year}`,
       {
@@ -347,7 +343,7 @@ exports.GetMovieDetailsFromTMDB = async (name, year) => {
         },
       },
     );
-    LogInfo(`Get Movie From TMDB Successfully`);
+    LogInfo('Get Movie From TMDB Successfully');
     return movie?.data?.results?.[0];
   } catch (err) {
     LogError(`Error While Getting Movie From TMDB Due To ${err}`);
@@ -359,7 +355,7 @@ exports.CheckMovieExist = async (id) => {
   try {
     const movie = await this.GetMovieById(id);
     if (!movie) {
-      LogError(`Movie Id is wrong`);
+      LogError('Movie Id is wrong');
       return ResponseSchema('Movie Id is wrong', false);
     }
     return ResponseSchema('Movie', true, movie);
@@ -419,9 +415,9 @@ exports.SetMoviesSearchedQueryDBObject = (query = {}) => {
 
 exports.DeleteMovie = async (id) => {
   try {
-    LogInfo(`Delete Movie By Id`);
+    LogInfo('Delete Movie By Id');
     const movie = await Movies.findByIdAndDelete(id);
-    LogInfo(`Delete Movie By Id Successfully`);
+    LogInfo('Delete Movie By Id Successfully');
 
     this.RemoveMovieCache();
 
@@ -434,9 +430,9 @@ exports.DeleteMovie = async (id) => {
 
 exports.UpdateMovie = async (id, data) => {
   try {
-    LogInfo(`Update Movie By Id`);
+    LogInfo('Update Movie By Id');
     const movie = await Movies.findByIdAndUpdate(id, data, { new: true });
-    LogInfo(`Update Movie By Id Successfully`);
+    LogInfo('Update Movie By Id Successfully');
 
     this.RemoveMovieCache();
 
@@ -449,7 +445,7 @@ exports.UpdateMovie = async (id, data) => {
 
 exports.SyncMovieDetailsWithTMDB = async (id) => {
   try {
-    LogInfo(`Sync Movie Details With TMBD`);
+    LogInfo('Sync Movie Details With TMBD');
     const movie = await Movies.findById(id);
     if (movie?.tmdb_additional_info?.length) return;
 
@@ -482,7 +478,7 @@ exports.SyncMovieDetailsWithTMDB = async (id) => {
 
     await this.UpdateMovie(id, updatedMovieData);
 
-    LogInfo(`Sync Movie Details With TMBD Successfully`);
+    LogInfo('Sync Movie Details With TMBD Successfully');
     return movie;
   } catch (err) {
     LogError(`Error While Syncing Movie Details With TMBD  Due To ${err}`);
