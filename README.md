@@ -91,10 +91,12 @@ Before you begin, ensure you have met the following requirements:
 │ ├── ErrorHandler.js
 │ └── HelperFunctions.js
 ├── middleware
-│ ├── auth.js
-│ └── authMiddlewares.js
-└── seed
-└── index.js
+│ ├── Auth.js
+│ └── AuthMiddlewares.js
+├── seed
+│ ├── index.js
+│ └── seedAdmin.js
+
 ```
 
 ## Endpoints
