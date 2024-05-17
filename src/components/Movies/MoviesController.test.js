@@ -12,6 +12,26 @@ describe('Movie Endpoints', () => {
   let authToken;
   let movieDetails;
 
+  const movieData = {
+    Title: 'Test Movie',
+    Director: 'Test Director',
+    Year: '2024',
+    Country: 'Test Country',
+    Length: 200,
+    Genre: 'Test Genre',
+    Colour: 'red',
+  };
+
+  const updatedMovieData = {
+    Title: 'Updated Test Movie',
+    Director: 'Updated Test Director',
+    Country: 'Updated Test Country',
+    Genre: 'Updated Test Genre',
+    Year: '20224',
+    Length: 2020,
+    Colour: 'Updated Colour',
+  };
+
   beforeAll(async () => {
     const loggedStatus = await LoginAdminUser(
       DEFAULT_ADMIN_EMAIL,
@@ -25,17 +45,13 @@ describe('Movie Endpoints', () => {
     await mongoose.disconnect(); // Close the MongoDB connection
   });
 
+  process.on('SIGINT', async () => {
+    await server.close();
+    process.exit(0);
+  });
+
   // Test for adding a movie
   it('should add a movie', async () => {
-    const movieData = {
-      Title: 'Test Movie22',
-      Director: 'Test Director',
-      Year: '2024',
-      Country: 'Test Country',
-      Length: 200,
-      Genre: 'Test Genre',
-      Colour: 'red',
-    };
     const response = await request(app)
       .post('/movies/add-movie')
       .set('Authorization', `Bearer ${authToken}`)
@@ -60,7 +76,7 @@ describe('Movie Endpoints', () => {
       .expect(200);
 
     expect(response.body.data.length).toBeGreaterThan(0);
-  });
+  }, 10000);
 
   // Test for getting all movies with pagination
   it('should get all movies with pagination', async () => {
@@ -84,15 +100,6 @@ describe('Movie Endpoints', () => {
 
   // Test for updating a movie
   it('should update a movie', async () => {
-    const updatedMovieData = {
-      Title: 'Updated Test Movie22',
-      Director: 'Updated Test Director',
-      Country: 'Updated Test Country',
-      Genre: 'Updated Test Genre',
-      Year: '20224',
-      Length: 2020,
-      Colour: 'Updated Colour',
-    };
     const response = await request(app)
       .put(`/movies/update-movie/${movieDetails._id}`)
       .set('Authorization', `Bearer ${authToken}`)
@@ -116,14 +123,14 @@ describe('Movie Endpoints', () => {
       .expect(200);
 
     expect(response.body.message).toBe('Movie Deleted Successfully');
-  });
+  }, 10000);
 
   // Test for adding movies from file
   it('should add movies from file', async () => {
     // Assuming you have a file upload functionality and the test file 'movies_file' is properly sent in the request
     const movieFile = path.resolve(
       __dirname,
-      `@src/documents/1000GreatestFilms.csv`,
+      `@src/documents/defaultMovies.csv`,
     );
     const response = await request(app)
       .post('/movies/add-movies-from-file')

@@ -1,6 +1,5 @@
 const { default: mongoose } = require('mongoose');
-const jwt = require('jsonwebtoken');
-const { logger } = require('@src/config/logger');
+const { logger } = require('@src/config/Logger');
 
 const PaginateSchema = (currentPage, pages, count, data) => ({
   currentPage,
@@ -23,13 +22,6 @@ const CheckValidIdObject = (req, res, id, message = '') => {
   return true;
 };
 
-const DecodeToken = (req, res, next) => {
-  const token = req?.headers?.authorization?.split(' ')?.[1];
-  const authedUser = jwt.decode(token);
-  req.authedUser = authedUser;
-  next();
-};
-
 const ConvertToObjectId = (value) => mongoose.Types.ObjectId(value);
 
 const LogInfo = (message) =>
@@ -44,7 +36,6 @@ const LogWarn = (message) =>
 module.exports = {
   ResponseSchema,
   PaginateSchema,
-  DecodeToken,
   ConvertToObjectId,
   CheckValidIdObject,
   LogInfo,

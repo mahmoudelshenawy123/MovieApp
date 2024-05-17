@@ -13,40 +13,55 @@ const {
   getAllUserFavoritedMoviesPaginated,
 } = require('./UsersController');
 const { login } = require('./UsersController');
-const { DecodeToken } = require('@src/helper/HelperFunctions');
-const { isAuthorized } = require('@src/middleware/authMiddlewares');
+const {
+  isAuthorized,
+  DecodeToken,
+  CheckUserToken,
+} = require('@src/middleware/AuthMiddlewares');
 
 router.use(DecodeToken);
 
-router.get('/all-users', isAuthorized('admin'), getAllUsers);
+router.use(CheckUserToken);
+
+router.get('/all-users', isAuthorized(['admin']), getAllUsers);
 
 router.get(
   '/all-users-with-pagination',
-  isAuthorized('admin'),
+  isAuthorized(['admin']),
   getAllUsersWithPagination,
 );
 
-router.get('/single-user/:id', getUserById);
+router.get('/single-user/:id', isAuthorized(['admin', 'user']), getUserById);
 
-router.post('/add-user', multer().none(), addUser);
+router.post('/add-user', multer().none(), isAuthorized(['admin']), addUser);
 
 router.post('/login', multer().none(), login);
 
-router.put('/update-user/:id', multer().none(), updateUser);
+router.put(
+  '/update-user/:id',
+  multer().none(),
+  isAuthorized(['admin', 'user']),
+  updateUser,
+);
 
 router.delete(
   '/delete-user/:id',
   multer().none(),
-  isAuthorized('admin'),
+  isAuthorized(['admin']),
   deleteUser,
 );
 
 router.post(
   '/toggle-movie-from-favorite',
   multer().none(),
+  isAuthorized(['user']),
   toggleMovieInFavorite,
 );
 
-router.get('/all-favorited-movie', getAllUserFavoritedMoviesPaginated);
+router.get(
+  '/all-favorited-movie',
+  isAuthorized(['user']),
+  getAllUserFavoritedMoviesPaginated,
+);
 
 module.exports = router;

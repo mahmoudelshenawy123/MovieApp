@@ -11,8 +11,11 @@ const {
   getMovieById,
 } = require('./MoviesController');
 const { addMoviesFromFile } = require('./MoviesController');
-const { isAuthorized } = require('@src/middleware/authMiddlewares');
-const { DecodeToken } = require('@src/helper/HelperFunctions');
+const {
+  isAuthorized,
+  DecodeToken,
+  CheckUserToken,
+} = require('@src/middleware/AuthMiddlewares');
 
 const upload = multer().single('movies_file');
 
@@ -25,32 +28,38 @@ function uploadModififed(req, res, next) {
 
 router.use(DecodeToken);
 
-router.get('/all-movies', getAllMovies);
+router.use(CheckUserToken);
 
-router.get('/all-movies-with-pagination', getAllMoviesWithPagination);
+router.get('/all-movies', isAuthorized(['admin', 'user']), getAllMovies);
 
-router.get('/single-movie/:id', getMovieById);
+router.get(
+  '/all-movies-with-pagination',
+  isAuthorized(['admin', 'user']),
+  getAllMoviesWithPagination,
+);
 
-router.post('/add-movie', multer().none(), isAuthorized('admin'), addMovie);
+router.get('/single-movie/:id', isAuthorized(['admin', 'user']), getMovieById);
+
+router.post('/add-movie', multer().none(), isAuthorized(['admin']), addMovie);
 
 router.post(
   '/add-movies-from-file',
   uploadModififed,
-  isAuthorized('admin'),
+  isAuthorized(['admin']),
   addMoviesFromFile,
 );
 
 router.put(
   '/update-movie/:id',
   multer().none(),
-  isAuthorized('admin'),
+  isAuthorized(['admin']),
   updateMovie,
 );
 
 router.delete(
   '/delete-movie/:id',
   multer().none(),
-  isAuthorized('admin'),
+  isAuthorized(['admin']),
   deleteMovie,
 );
 

@@ -9,9 +9,9 @@ const { AdminUsers } = require('./AdminUsersModel');
 
 exports.AddAdminUser = async (data) => {
   try {
-    LogInfo(`Start Add Admin User`);
+    LogInfo('Start Add Admin User');
     const addedUser = await AdminUsers.create(data);
-    LogInfo(`Finish Add User Successfully`);
+    LogInfo('Finish Add User Successfully');
     return addedUser;
   } catch (err) {
     LogError(`Error While Adding Admin User Due To ${err}`);
@@ -21,9 +21,9 @@ exports.AddAdminUser = async (data) => {
 
 exports.UpdateAdminUser = async (id, data) => {
   try {
-    LogInfo(`Update Admin User By Id`);
+    LogInfo('Update Admin User By Id');
     const user = await AdminUsers.findByIdAndUpdate(id, data, { new: true });
-    LogInfo(`Update Admin User By Id Successfully`);
+    LogInfo('Update Admin User By Id Successfully');
     return user;
   } catch (err) {
     LogError(`Error While Updating Admin User By Id Due To ${err}`);
@@ -33,9 +33,9 @@ exports.UpdateAdminUser = async (id, data) => {
 
 exports.GetAllAdminUsers = async (query = {}, selectedKeys = {}) => {
   try {
-    LogInfo(`Get All Admin Users`);
+    LogInfo('Get All Admin Users');
     const users = await AdminUsers.find(query, selectedKeys);
-    LogInfo(`Get All Admin Users Successfully`);
+    LogInfo('Get All Admin Users Successfully');
     return users;
   } catch (err) {
     LogError(`Error While Getting All Admin Users Due To ${err}`);
@@ -50,13 +50,13 @@ exports.GetAllAdminUsersPaginated = async (
   selectedKeys = {},
 ) => {
   try {
-    LogInfo(`Get All Admin Users With Pagination`);
+    LogInfo('Get All Admin Users With Pagination');
     const users = await AdminUsers.find(searchedQuery, selectedKeys)
       .sort({ _id: -1 })
       .skip(page * itemPerPage)
       .limit(itemPerPage);
 
-    LogInfo(`Get All Admin Users With Pagination Successfully`);
+    LogInfo('Get All Admin Users With Pagination Successfully');
     return users;
   } catch (err) {
     LogError(
@@ -68,9 +68,9 @@ exports.GetAllAdminUsersPaginated = async (
 
 exports.GetAllAdminUsersCount = async (query = {}) => {
   try {
-    LogInfo(`Get All Admin Users Count`);
+    LogInfo('Get All Admin Users Count');
     const usersCount = await AdminUsers.find(query).count();
-    LogInfo(`Get All Admin Users Count Successfully`);
+    LogInfo('Get All Admin Users Count Successfully');
     return usersCount;
   } catch (err) {
     LogError(`Error While Getting All Users Count Due To ${err}`);
@@ -80,9 +80,9 @@ exports.GetAllAdminUsersCount = async (query = {}) => {
 
 exports.GetAdminUserById = async (id, selectedKeys = {}) => {
   try {
-    LogInfo(`Get Admin User By Id`);
+    LogInfo('Get Admin User By Id');
     const user = await AdminUsers.findById(id, selectedKeys);
-    LogInfo(`Get Admin User By Id Successfully`);
+    LogInfo('Get Admin User By Id Successfully');
     return user?.toObject();
   } catch (err) {
     LogError(`Error While Getting Admin User By Id Due To ${err}`);
@@ -90,12 +90,24 @@ exports.GetAdminUserById = async (id, selectedKeys = {}) => {
   }
 };
 
+exports.GetAdminUserByQuery = async (query) => {
+  try {
+    LogInfo('Get Admin User By Query');
+    const user = await AdminUsers.findOne(query);
+    LogInfo('Get Admin User By Query Successfully');
+    return user?.toObject();
+  } catch (err) {
+    LogError(`Error While Getting Admin User By Query Due To ${err}`);
+    throw err;
+  }
+};
+
 exports.LoginAdminUser = async (email, password) => {
   try {
-    LogInfo(`Login Admin User By Query`);
+    LogInfo('Login Admin User By Query');
     const user = await AdminUsers.findOne({ email });
     if (!user) {
-      LogError(`User Admin Email doesn't Exist`);
+      LogError("User Admin Email doesn't Exist");
       return ResponseSchema("Admin User Email doesn't Exist", false);
     }
 
@@ -108,7 +120,7 @@ exports.LoginAdminUser = async (email, password) => {
       return ResponseSchema('Token', true, generatedLoginToken);
     }
 
-    LogError(`Wrong Admin User Credentials`);
+    LogError('Wrong Admin User Credentials');
     return ResponseSchema('Wrong Admin User Credentials', false);
   } catch (err) {
     LogError(`Error While Getting Admin User By Query Due To ${err}`);
@@ -137,7 +149,7 @@ exports.CheckAdminUserExist = async (id, selectedKeys = {}) => {
   try {
     const user = await this.GetAdminUserById(id, selectedKeys);
     if (!user) {
-      LogError(`Admin User Id is wrong`);
+      LogError('Admin User Id is wrong');
       return ResponseSchema('Admin User Id is wrong', false);
     }
     return ResponseSchema('Admin User', true, user);
@@ -149,13 +161,13 @@ exports.CheckAdminUserExist = async (id, selectedKeys = {}) => {
 
 exports.DeleteAdminUser = async (id, req) => {
   try {
-    LogInfo(`Delete Admin User By Id`);
+    LogInfo('Delete Admin User By Id');
     if (req?.authedUser?.user_id === id) {
-      LogError(`Admin User Can't Delete Itself`);
+      LogError("Admin User Can't Delete Itself");
       return ResponseSchema("Admin User Can't Delete Itself", false);
     }
     const user = await AdminUsers.findByIdAndDelete(id);
-    LogInfo(`Delete Admin User By Id Successfully`);
+    LogInfo('Delete Admin User By Id Successfully');
     return ResponseSchema('Admin User', true, user);
   } catch (err) {
     LogError(`Error While Deleteing Admin User By Id Due To ${err}`);

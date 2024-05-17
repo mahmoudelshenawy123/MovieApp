@@ -1,6 +1,5 @@
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
-const { logger } = require('@src/config/logger');
 const {
   ResponseSchema,
   ConvertToObjectId,
@@ -10,9 +9,9 @@ const { LogInfo, LogError } = require('@src/helper/HelperFunctions');
 
 exports.AddUser = async (data) => {
   try {
-    LogInfo(`Start Add User`);
+    LogInfo('Start Add User');
     const addedUser = await Users.create(data);
-    LogInfo(`Finish Add User Successfully`);
+    LogInfo('Finish Add User Successfully');
     return addedUser;
   } catch (err) {
     LogError(`Error While Adding User Due To ${err}`);
@@ -22,9 +21,9 @@ exports.AddUser = async (data) => {
 
 exports.UpdateUser = async (id, data) => {
   try {
-    LogInfo(`Update User By Id`);
+    LogInfo('Update User By Id');
     const user = await Users.findByIdAndUpdate(id, data, { new: true });
-    LogInfo(`Update User By Id Successfully`);
+    LogInfo('Update User By Id Successfully');
     return user;
   } catch (err) {
     LogError(`Error While Updating User By Id Due To ${err}`);
@@ -34,9 +33,9 @@ exports.UpdateUser = async (id, data) => {
 
 exports.GetAllUsers = async (query = {}, selectedKeys = {}) => {
   try {
-    LogInfo(`Get All Users`);
+    LogInfo('Get All Users');
     const users = await Users.find(query, selectedKeys);
-    LogInfo(`Get All Users Successfully`);
+    LogInfo('Get All Users Successfully');
     return users;
   } catch (err) {
     LogError(`Error While Getting All Users Due To ${err}`);
@@ -51,12 +50,12 @@ exports.GetAllUsersPaginated = async (
   selectedKeys = {},
 ) => {
   try {
-    LogInfo(`Get All Users With Pagination`);
+    LogInfo('Get All Users With Pagination');
     const users = await Users.find(searchedQuery, selectedKeys)
       .sort({ _id: -1 })
       .skip(page * itemPerPage)
       .limit(itemPerPage);
-    LogInfo(`Get All Users With Pagination Successfully`);
+    LogInfo('Get All Users With Pagination Successfully');
     return users;
   } catch (err) {
     LogError(`Error While Getting All Users With Pagination Due To ${err}`);
@@ -66,9 +65,9 @@ exports.GetAllUsersPaginated = async (
 
 exports.GetAllUsersCount = async (query = {}) => {
   try {
-    LogInfo(`Get All Users Count`);
+    LogInfo('Get All Users Count');
     const usersCount = await Users.find(query).count();
-    LogInfo(`Get All Users Count Successfully`);
+    LogInfo('Get All Users Count Successfully');
     return usersCount;
   } catch (err) {
     LogError(`Error While Getting All Users Count Due To ${err}`);
@@ -78,9 +77,9 @@ exports.GetAllUsersCount = async (query = {}) => {
 
 exports.GetUserById = async (id, selectedKeys = {}, populate = []) => {
   try {
-    LogInfo(`Get User By Id`);
+    LogInfo('Get User By Id');
     const user = await Users.findById(id, selectedKeys).populate(populate);
-    LogInfo(`Get User By Id Successfully`);
+    LogInfo('Get User By Id Successfully');
     return user?.toObject();
   } catch (err) {
     LogError(`Error While Getting User By Id Due To ${err}`);
@@ -88,12 +87,24 @@ exports.GetUserById = async (id, selectedKeys = {}, populate = []) => {
   }
 };
 
+exports.GetUserByQuery = async (query = {}) => {
+  try {
+    LogInfo('Get User By Query');
+    const user = await Users.findOne(query);
+    LogInfo('Get User By Query Successfully');
+    return user?.toObject();
+  } catch (err) {
+    LogError(`Error While Getting User By Query Due To ${err}`);
+    throw err;
+  }
+};
+
 exports.LoginUser = async (email, password) => {
   try {
-    LogInfo(`Login User By Query`);
+    LogInfo('Login User By Query');
     const user = await Users.findOne({ email });
     if (!user) {
-      LogError(`User Email doesn't Exist`);
+      LogError("User Email doesn't Exist");
       return ResponseSchema("User Email doesn't Exist", false);
     }
 
@@ -106,7 +117,7 @@ exports.LoginUser = async (email, password) => {
       return ResponseSchema('Token', true, generatedLoginToken);
     }
 
-    LogError(`Wrong User Credentials`);
+    LogError('Wrong User Credentials');
     return ResponseSchema('Wrong User Credentials', false);
   } catch (err) {
     LogError(`Error While Getting User By Query Due To ${err}`);
@@ -135,7 +146,7 @@ exports.CheckUserExist = async (id, selectedKeys = {}) => {
   try {
     const user = await this.GetUserById(id, selectedKeys);
     if (!user) {
-      LogError(`User Id is wrong`);
+      LogError('User Id is wrong');
       return ResponseSchema('User Id is wrong', false);
     }
     return ResponseSchema('User', true, user);
@@ -149,7 +160,7 @@ exports.CheckMovieInUserFavorite = async (id, movieId) => {
   try {
     const user = await this.GetUserById(id);
     if (!user) {
-      LogError(`User Id is wrong`);
+      LogError('User Id is wrong');
       return ResponseSchema('User Id is wrong', false);
     }
 
@@ -170,9 +181,9 @@ exports.CheckMovieInUserFavorite = async (id, movieId) => {
 
 exports.DeleteUser = async (id) => {
   try {
-    LogInfo(`Delete User By Id`);
+    LogInfo('Delete User By Id');
     const user = await Users.findByIdAndDelete(id);
-    LogInfo(`Delete User By Id Successfully`);
+    LogInfo('Delete User By Id Successfully');
     return user;
   } catch (err) {
     LogError(`Error While Deleteing User By Id Due To ${err}`);

@@ -11,25 +11,30 @@ const {
   deleteAdminUser,
 } = require('./AdminUsersController');
 const { login } = require('./AdminUsersController');
-const { DecodeToken } = require('@src/helper/HelperFunctions');
-const { isAuthorized } = require('@src/middleware/authMiddlewares');
+const {
+  isAuthorized,
+  DecodeToken,
+  CheckUserToken,
+} = require('@src/middleware/AuthMiddlewares');
 
 router.use(DecodeToken);
 
-router.get('/all-admin-users', isAuthorized('admin'), getAllAdminUsers);
+router.use(CheckUserToken);
+
+router.get('/all-admin-users', isAuthorized(['admin']), getAllAdminUsers);
 
 router.get(
   '/all-admin-users-with-pagination',
-  isAuthorized('admin'),
+  isAuthorized(['admin']),
   getAllAdminUsersWithPagination,
 );
 
-router.get('/single-admin-user/:id', isAuthorized('admin'), getAdminUserById);
+router.get('/single-admin-user/:id', isAuthorized(['admin']), getAdminUserById);
 
 router.post(
   '/add-admin-user',
   multer().none(),
-  isAuthorized('admin'),
+  isAuthorized(['admin']),
   addAdminUser,
 );
 
@@ -38,14 +43,14 @@ router.post('/login', multer().none(), login);
 router.put(
   '/update-admin-user/:id',
   multer().none(),
-  isAuthorized('admin'),
+  isAuthorized(['admin']),
   updateAdminUser,
 );
 
 router.delete(
   '/delete-admin-user/:id',
   multer().none(),
-  isAuthorized('admin'),
+  isAuthorized(['admin']),
   deleteAdminUser,
 );
 
